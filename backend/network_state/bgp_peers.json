@@ -1,0 +1,74 @@
+[
+    {
+        "device": "blr-edge-01",
+        "local_as": 65001,
+        "router_id": "10.10.0.1",
+        "peers": [
+            {"peer_ip": "10.99.12.2", "peer_device": "lon-edge-01", "peer_as": 65002, "state": "established", "prefixes_received": ["10.20.0.0/16"], "prefixes_advertised": ["10.10.0.0/14", "10.42.0.0/16"]},
+            {"peer_ip": "10.99.14.2", "peer_device": "sg-edge-01", "peer_as": 65004, "state": "established", "prefixes_received": ["10.50.0.0/14"], "prefixes_advertised": ["10.10.0.0/14", "10.42.0.0/16"]}
+        ]
+    },
+    {
+        "device": "blr-edge-02",
+        "local_as": 65001,
+        "router_id": "10.10.0.2",
+        "peers": [
+            {"peer_ip": "10.99.12.6", "peer_device": "lon-edge-02", "peer_as": 65002, "state": "established", "prefixes_received": ["10.20.0.0/16"], "prefixes_advertised": ["10.10.0.0/14", "10.42.0.0/16"]},
+            {"peer_ip": "10.99.14.6", "peer_device": "sg-edge-02", "peer_as": 65004, "state": "established", "prefixes_received": ["10.50.0.0/14"], "prefixes_advertised": ["10.10.0.0/14", "10.42.0.0/16"]}
+        ]
+    },
+    {
+        "device": "lon-edge-01",
+        "local_as": 65002,
+        "router_id": "10.20.0.1",
+        "peers": [
+            {"peer_ip": "10.99.12.1", "peer_device": "blr-edge-01", "peer_as": 65001, "state": "established", "prefixes_received": ["10.10.0.0/14", "10.42.0.0/16"], "prefixes_advertised": ["10.20.0.0/16"]},
+            {"peer_ip": "10.99.23.2", "peer_device": "nyc-edge-01", "peer_as": 65003, "state": "established", "prefixes_received": ["10.30.0.0/16"], "prefixes_advertised": ["10.20.0.0/16"]}
+        ]
+    },
+    {
+        "device": "lon-edge-02",
+        "local_as": 65002,
+        "router_id": "10.20.0.2",
+        "peers": [
+            {"peer_ip": "10.99.12.5", "peer_device": "blr-edge-02", "peer_as": 65001, "state": "established", "prefixes_received": ["10.10.0.0/14", "10.42.0.0/16"], "prefixes_advertised": ["10.20.0.0/16"]},
+            {"peer_ip": "10.99.23.6", "peer_device": "nyc-edge-02", "peer_as": 65003, "state": "established", "prefixes_received": ["10.30.0.0/16"], "prefixes_advertised": ["10.20.0.0/16"]}
+        ]
+    },
+    {
+        "device": "nyc-edge-01",
+        "local_as": 65003,
+        "router_id": "10.30.0.1",
+        "peers": [
+            {"peer_ip": "10.99.23.1", "peer_device": "lon-edge-01", "peer_as": 65002, "state": "established", "prefixes_received": ["10.20.0.0/16"], "prefixes_advertised": ["10.30.0.0/16"]},
+            {"peer_ip": "10.99.34.2", "peer_device": "sg-edge-01", "peer_as": 65004, "state": "established", "prefixes_received": ["10.50.0.0/14"], "prefixes_advertised": ["10.30.0.0/16"]}
+        ]
+    },
+    {
+        "device": "nyc-edge-02",
+        "local_as": 65003,
+        "router_id": "10.30.0.2",
+        "peers": [
+            {"peer_ip": "10.99.23.5", "peer_device": "lon-edge-02", "peer_as": 65002, "state": "established", "prefixes_received": ["10.20.0.0/16"], "prefixes_advertised": ["10.30.0.0/16"]},
+            {"peer_ip": "10.99.34.6", "peer_device": "sg-edge-02", "peer_as": 65004, "state": "established", "prefixes_received": ["10.50.0.0/14"], "prefixes_advertised": ["10.30.0.0/16"]}
+        ]
+    },
+    {
+        "device": "sg-edge-01",
+        "local_as": 65004,
+        "router_id": "10.50.0.1",
+        "peers": [
+            {"peer_ip": "10.99.14.1", "peer_device": "blr-edge-01", "peer_as": 65001, "state": "established", "prefixes_received": ["10.10.0.0/14", "10.42.0.0/16"], "prefixes_advertised": ["10.50.0.0/14"]},
+            {"peer_ip": "10.99.34.1", "peer_device": "nyc-edge-01", "peer_as": 65003, "state": "established", "prefixes_received": ["10.30.0.0/16"], "prefixes_advertised": ["10.50.0.0/14"]}
+        ]
+    },
+    {
+        "device": "sg-edge-02",
+        "local_as": 65004,
+        "router_id": "10.50.0.2",
+        "peers": [
+            {"peer_ip": "10.99.14.5", "peer_device": "blr-edge-02", "peer_as": 65001, "state": "established", "prefixes_received": ["10.10.0.0/14", "10.42.0.0/16"], "prefixes_advertised": ["10.50.0.0/14"]},
+            {"peer_ip": "10.99.34.5", "peer_device": "nyc-edge-02", "peer_as": 65003, "state": "established", "prefixes_received": ["10.30.0.0/16"], "prefixes_advertised": ["10.50.0.0/14"]}
+        ]
+    }
+]

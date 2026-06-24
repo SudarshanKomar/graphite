@@ -1,0 +1,851 @@
+[
+    {
+        "id": "blr-edge-01",
+        "name": "BLR Edge Router 1",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.1",
+        "role": "Primary WAN edge router (eBGP to LON and SG)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.10.0.5/30", "status": "up", "speed": "40G", "connected_to": "blr-fw-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.10.0.9/30", "status": "up", "speed": "40G", "connected_to": "blr-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.12.1/30", "status": "up", "speed": "10G", "connected_to": "lon-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.14.1/30", "status": "up", "speed": "10G", "connected_to": "sg-edge-01", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-fw-01", "next_hop_ip": "10.10.0.6", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-fw-01", "next_hop_ip": "10.10.0.6", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.20.0.0/16", "next_hop": "lon-edge-01", "next_hop_ip": "10.99.12.2", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.30.0.0/16", "next_hop": "lon-edge-01", "next_hop_ip": "10.99.12.2", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "10.50.0.0/14", "next_hop": "sg-edge-01", "next_hop_ip": "10.99.14.2", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-fw-01", "next_hop_ip": "10.10.0.6", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-edge-02",
+        "name": "BLR Edge Router 2",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.2",
+        "role": "Secondary WAN edge router (eBGP to LON and SG)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.10.0.13/30", "status": "up", "speed": "40G", "connected_to": "blr-fw-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.10.0.10/30", "status": "up", "speed": "40G", "connected_to": "blr-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.12.5/30", "status": "up", "speed": "10G", "connected_to": "lon-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.14.5/30", "status": "up", "speed": "10G", "connected_to": "sg-edge-02", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-fw-02", "next_hop_ip": "10.10.0.14", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-fw-02", "next_hop_ip": "10.10.0.14", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.20.0.0/16", "next_hop": "lon-edge-02", "next_hop_ip": "10.99.12.6", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.30.0.0/16", "next_hop": "lon-edge-02", "next_hop_ip": "10.99.12.6", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "10.50.0.0/14", "next_hop": "sg-edge-02", "next_hop_ip": "10.99.14.6", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-fw-02", "next_hop_ip": "10.10.0.14", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-fw-01",
+        "name": "BLR Firewall 1",
+        "type": "firewall",
+        "vendor": "Palo Alto",
+        "model": "PA-5450",
+        "os": "PAN-OS",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.3",
+        "role": "Perimeter firewall (primary)",
+        "interfaces": [
+            {"name": "ethernet1/1", "ip_address": "10.10.0.6/30", "status": "up", "speed": "40G", "connected_to": "blr-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "ethernet1/2", "ip_address": "10.10.0.1/30", "status": "up", "speed": "40G", "connected_to": "blr-core-01", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-core-01", "next_hop_ip": "10.10.0.2", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-core-01", "next_hop_ip": "10.10.0.2", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-edge-01", "next_hop_ip": "10.10.0.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-fw-02",
+        "name": "BLR Firewall 2",
+        "type": "firewall",
+        "vendor": "Palo Alto",
+        "model": "PA-5450",
+        "os": "PAN-OS",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.4",
+        "role": "Perimeter firewall (secondary)",
+        "interfaces": [
+            {"name": "ethernet1/1", "ip_address": "10.10.0.14/30", "status": "up", "speed": "40G", "connected_to": "blr-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "ethernet1/2", "ip_address": "10.10.0.17/30", "status": "up", "speed": "40G", "connected_to": "blr-core-02", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-core-02", "next_hop_ip": "10.10.0.18", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-core-02", "next_hop_ip": "10.10.0.18", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-edge-02", "next_hop_ip": "10.10.0.13", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-core-01",
+        "name": "BLR Core Switch 1",
+        "type": "core_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9664F-ON",
+        "os": "SONiC",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.5",
+        "role": "Campus backbone, inter-VLAN routing (primary)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.10.0.2/30", "status": "up", "speed": "40G", "connected_to": "blr-fw-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.10.0.21/30", "status": "up", "speed": "100G", "connected_to": "blr-core-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.10.1.1/30", "status": "up", "speed": "40G", "connected_to": "blr-dist-01", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]},
+            {"name": "Ethernet1/4", "ip_address": "10.10.1.5/30", "status": "up", "speed": "40G", "connected_to": "blr-dist-02", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]}
+        ],
+        "routes": [
+            {"prefix": "10.42.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "10.11.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-fw-01", "next_hop_ip": "10.10.0.1", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-core-02",
+        "name": "BLR Core Switch 2",
+        "type": "core_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9664F-ON",
+        "os": "SONiC",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.6",
+        "role": "Campus backbone, inter-VLAN routing (secondary)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.10.0.18/30", "status": "up", "speed": "40G", "connected_to": "blr-fw-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.10.0.22/30", "status": "up", "speed": "100G", "connected_to": "blr-core-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.10.1.9/30", "status": "up", "speed": "40G", "connected_to": "blr-dist-01", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]},
+            {"name": "Ethernet1/4", "ip_address": "10.10.1.13/30", "status": "up", "speed": "40G", "connected_to": "blr-dist-02", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]}
+        ],
+        "routes": [
+            {"prefix": "10.42.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "10.11.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-fw-02", "next_hop_ip": "10.10.0.17", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-dist-01",
+        "name": "BLR Distribution Switch 1",
+        "type": "distribution_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch S5248F-ON",
+        "os": "SONiC",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.7",
+        "role": "Distribution layer for floors 1-2",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.10.1.2/30", "status": "up", "speed": "40G", "connected_to": "blr-core-01", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]},
+            {"name": "Ethernet1/2", "ip_address": "10.10.1.10/30", "status": "up", "speed": "40G", "connected_to": "blr-core-02", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]},
+            {"name": "Ethernet1/3", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-access-f1", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 420, 600]},
+            {"name": "Ethernet1/4", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-access-f2", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 420, 600]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-core-01", "next_hop_ip": "10.10.1.1", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-dist-02",
+        "name": "BLR Distribution Switch 2",
+        "type": "distribution_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch S5248F-ON",
+        "os": "SONiC",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.8",
+        "role": "Distribution layer for floors 3-4",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.10.1.6/30", "status": "up", "speed": "40G", "connected_to": "blr-core-01", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]},
+            {"name": "Ethernet1/2", "ip_address": "10.10.1.14/30", "status": "up", "speed": "40G", "connected_to": "blr-core-02", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 130, 420, 500, 600, 700]},
+            {"name": "Ethernet1/3", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-access-f3", "vlan_mode": "trunk", "allowed_vlans": [110, 130, 420, 700]},
+            {"name": "Ethernet1/4", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-access-f4", "vlan_mode": "trunk", "allowed_vlans": [110, 130, 420, 700]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-core-02", "next_hop_ip": "10.10.1.13", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-access-f1",
+        "name": "BLR Floor 1 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.11",
+        "role": "Aggregated access layer for floor 1 (~8 switches)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-dist-01", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 420, 600]},
+            {"name": "Ethernet1/2", "ip_address": null, "status": "up", "speed": "1G", "connected_to": "blr-ap-f1", "vlan_mode": "trunk", "allowed_vlans": [420, 130]},
+            {"name": "Ethernet1/3", "ip_address": null, "status": "up", "speed": "1G", "connected_to": null, "vlan_mode": "access", "access_vlan": 110}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-dist-01", "next_hop_ip": "10.10.1.2", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-access-f2",
+        "name": "BLR Floor 2 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.12",
+        "role": "Aggregated access layer for floor 2 (~8 switches)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-dist-01", "vlan_mode": "trunk", "allowed_vlans": [110, 120, 420, 600]},
+            {"name": "Ethernet1/2", "ip_address": null, "status": "up", "speed": "1G", "connected_to": "blr-ap-f2", "vlan_mode": "trunk", "allowed_vlans": [420, 130]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-dist-01", "next_hop_ip": "10.10.1.2", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-access-f3",
+        "name": "BLR Floor 3 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.13",
+        "role": "Aggregated access layer for floor 3 (~8 switches)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-dist-02", "vlan_mode": "trunk", "allowed_vlans": [110, 130, 420, 700]},
+            {"name": "Ethernet1/2", "ip_address": null, "status": "up", "speed": "1G", "connected_to": "blr-ap-f3", "vlan_mode": "trunk", "allowed_vlans": [420, 130]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-dist-02", "next_hop_ip": "10.10.1.6", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-access-f4",
+        "name": "BLR Floor 4 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.14",
+        "role": "Aggregated access layer for floor 4 (~8 switches)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "blr-dist-02", "vlan_mode": "trunk", "allowed_vlans": [110, 130, 420, 700]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "blr-dist-02", "next_hop_ip": "10.10.1.6", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "blr-ap-f1",
+        "name": "BLR Floor 1 AP Group",
+        "type": "access_point",
+        "vendor": "Aruba",
+        "model": "AP-635",
+        "os": "ArubaOS",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.21",
+        "role": "Wireless APs for floor 1 (Corp WiFi + Guest)",
+        "interfaces": [
+            {"name": "eth0", "ip_address": null, "status": "up", "speed": "1G", "connected_to": "blr-access-f1", "vlan_mode": "trunk", "allowed_vlans": [420, 130]}
+        ],
+        "routes": []
+    },
+    {
+        "id": "blr-ap-f2",
+        "name": "BLR Floor 2 AP Group",
+        "type": "access_point",
+        "vendor": "Aruba",
+        "model": "AP-635",
+        "os": "ArubaOS",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.22",
+        "role": "Wireless APs for floor 2 (Corp WiFi + Guest)",
+        "interfaces": [
+            {"name": "eth0", "ip_address": null, "status": "up", "speed": "1G", "connected_to": "blr-access-f2", "vlan_mode": "trunk", "allowed_vlans": [420, 130]}
+        ],
+        "routes": []
+    },
+    {
+        "id": "blr-ap-f3",
+        "name": "BLR Floor 3 AP Group",
+        "type": "access_point",
+        "vendor": "Aruba",
+        "model": "AP-635",
+        "os": "ArubaOS",
+        "site": "bangalore",
+        "status": "up",
+        "management_ip": "10.10.254.23",
+        "role": "Wireless APs for floor 3 (Corp WiFi + Guest)",
+        "interfaces": [
+            {"name": "eth0", "ip_address": null, "status": "up", "speed": "1G", "connected_to": "blr-access-f3", "vlan_mode": "trunk", "allowed_vlans": [420, 130]}
+        ],
+        "routes": []
+    },
+    {
+        "id": "lon-edge-01",
+        "name": "LON Edge Router 1",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.1",
+        "role": "Primary WAN edge router (eBGP to BLR and NYC)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.20.0.5/30", "status": "up", "speed": "40G", "connected_to": "lon-core-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.20.0.9/30", "status": "up", "speed": "40G", "connected_to": "lon-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.12.2/30", "status": "up", "speed": "10G", "connected_to": "blr-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.23.1/30", "status": "up", "speed": "10G", "connected_to": "nyc-edge-01", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.20.0.0/16", "next_hop": "lon-core-01", "next_hop_ip": "10.20.0.6", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-edge-01", "next_hop_ip": "10.99.12.1", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-edge-01", "next_hop_ip": "10.99.12.1", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.30.0.0/16", "next_hop": "nyc-edge-01", "next_hop_ip": "10.99.23.2", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.50.0.0/14", "next_hop": "nyc-edge-01", "next_hop_ip": "10.99.23.2", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-core-01", "next_hop_ip": "10.20.0.6", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "lon-edge-02",
+        "name": "LON Edge Router 2",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.2",
+        "role": "Secondary WAN edge router (eBGP to BLR and NYC)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.20.0.13/30", "status": "up", "speed": "40G", "connected_to": "lon-core-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.20.0.10/30", "status": "up", "speed": "40G", "connected_to": "lon-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.12.6/30", "status": "up", "speed": "10G", "connected_to": "blr-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.23.5/30", "status": "up", "speed": "10G", "connected_to": "nyc-edge-02", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.20.0.0/16", "next_hop": "lon-core-02", "next_hop_ip": "10.20.0.14", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-edge-02", "next_hop_ip": "10.99.12.5", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-edge-02", "next_hop_ip": "10.99.12.5", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.30.0.0/16", "next_hop": "nyc-edge-02", "next_hop_ip": "10.99.23.6", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.50.0.0/14", "next_hop": "nyc-edge-02", "next_hop_ip": "10.99.23.6", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-core-02", "next_hop_ip": "10.20.0.14", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "lon-core-01",
+        "name": "LON Core Switch 1",
+        "type": "core_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.5",
+        "role": "Campus backbone, inter-VLAN routing (primary)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.20.0.6/30", "status": "up", "speed": "40G", "connected_to": "lon-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.20.0.17/30", "status": "up", "speed": "100G", "connected_to": "lon-core-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.20.1.1/30", "status": "up", "speed": "10G", "connected_to": "lon-access-f1", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]},
+            {"name": "Ethernet1/4", "ip_address": "10.20.1.5/30", "status": "up", "speed": "10G", "connected_to": "lon-access-f2", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "10.20.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-edge-01", "next_hop_ip": "10.20.0.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "lon-core-02",
+        "name": "LON Core Switch 2",
+        "type": "core_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.6",
+        "role": "Campus backbone, inter-VLAN routing (secondary)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.20.0.14/30", "status": "up", "speed": "40G", "connected_to": "lon-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.20.0.18/30", "status": "up", "speed": "100G", "connected_to": "lon-core-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.20.1.9/30", "status": "up", "speed": "10G", "connected_to": "lon-access-f3", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "10.20.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-edge-02", "next_hop_ip": "10.20.0.13", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "lon-access-f1",
+        "name": "LON Floor 1 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.11",
+        "role": "Aggregated access layer for floor 1",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "lon-core-01", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-core-01", "next_hop_ip": "10.20.1.1", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "lon-access-f2",
+        "name": "LON Floor 2 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.12",
+        "role": "Aggregated access layer for floor 2",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "lon-core-01", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-core-01", "next_hop_ip": "10.20.1.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "lon-access-f3",
+        "name": "LON Floor 3 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "london",
+        "status": "up",
+        "management_ip": "10.20.254.13",
+        "role": "Aggregated access layer for floor 3",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "lon-core-02", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "lon-core-02", "next_hop_ip": "10.20.1.9", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "nyc-edge-01",
+        "name": "NYC Edge Router 1",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "newyork",
+        "status": "up",
+        "management_ip": "10.30.254.1",
+        "role": "Primary WAN edge router (eBGP to LON and SG)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.30.0.5/30", "status": "up", "speed": "40G", "connected_to": "nyc-core-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.30.0.9/30", "status": "up", "speed": "40G", "connected_to": "nyc-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.23.2/30", "status": "up", "speed": "10G", "connected_to": "lon-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.34.1/30", "status": "up", "speed": "10G", "connected_to": "sg-edge-01", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.30.0.0/16", "next_hop": "nyc-core-01", "next_hop_ip": "10.30.0.6", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.50.0.0/14", "next_hop": "sg-edge-01", "next_hop_ip": "10.99.34.2", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.20.0.0/16", "next_hop": "lon-edge-01", "next_hop_ip": "10.99.23.1", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.10.0.0/14", "next_hop": "lon-edge-01", "next_hop_ip": "10.99.23.1", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "lon-edge-01", "next_hop_ip": "10.99.23.1", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "nyc-core-01", "next_hop_ip": "10.30.0.6", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "nyc-edge-02",
+        "name": "NYC Edge Router 2",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "newyork",
+        "status": "up",
+        "management_ip": "10.30.254.2",
+        "role": "Secondary WAN edge router (eBGP to LON and SG)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.30.0.13/30", "status": "up", "speed": "40G", "connected_to": "nyc-core-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.30.0.10/30", "status": "up", "speed": "40G", "connected_to": "nyc-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.23.6/30", "status": "up", "speed": "10G", "connected_to": "lon-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.34.5/30", "status": "up", "speed": "10G", "connected_to": "sg-edge-02", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.30.0.0/16", "next_hop": "nyc-core-02", "next_hop_ip": "10.30.0.14", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.50.0.0/14", "next_hop": "sg-edge-02", "next_hop_ip": "10.99.34.6", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.20.0.0/16", "next_hop": "lon-edge-02", "next_hop_ip": "10.99.23.5", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.10.0.0/14", "next_hop": "lon-edge-02", "next_hop_ip": "10.99.23.5", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "lon-edge-02", "next_hop_ip": "10.99.23.5", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "nyc-core-02", "next_hop_ip": "10.30.0.14", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "nyc-core-01",
+        "name": "NYC Core Switch 1",
+        "type": "core_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "newyork",
+        "status": "up",
+        "management_ip": "10.30.254.5",
+        "role": "Campus backbone, inter-VLAN routing (primary)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.30.0.6/30", "status": "up", "speed": "40G", "connected_to": "nyc-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.30.0.17/30", "status": "up", "speed": "100G", "connected_to": "nyc-core-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.30.1.1/30", "status": "up", "speed": "10G", "connected_to": "nyc-access-f1", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "10.30.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "nyc-edge-01", "next_hop_ip": "10.30.0.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "nyc-core-02",
+        "name": "NYC Core Switch 2",
+        "type": "core_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "newyork",
+        "status": "up",
+        "management_ip": "10.30.254.6",
+        "role": "Campus backbone, inter-VLAN routing (secondary)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.30.0.14/30", "status": "up", "speed": "40G", "connected_to": "nyc-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.30.0.18/30", "status": "up", "speed": "100G", "connected_to": "nyc-core-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.30.1.5/30", "status": "up", "speed": "10G", "connected_to": "nyc-access-f2", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "10.30.0.0/16", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "nyc-edge-02", "next_hop_ip": "10.30.0.13", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "nyc-access-f1",
+        "name": "NYC Floor 1 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "newyork",
+        "status": "up",
+        "management_ip": "10.30.254.11",
+        "role": "Aggregated access layer for floor 1",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "nyc-core-01", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "nyc-core-01", "next_hop_ip": "10.30.1.1", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "nyc-access-f2",
+        "name": "NYC Floor 2 Access Layer",
+        "type": "access_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch N3248TE-ON",
+        "os": "OS10",
+        "site": "newyork",
+        "status": "up",
+        "management_ip": "10.30.254.12",
+        "role": "Aggregated access layer for floor 2",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": null, "status": "up", "speed": "10G", "connected_to": "nyc-core-02", "vlan_mode": "trunk", "allowed_vlans": [110, 420, 500]}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "nyc-core-02", "next_hop_ip": "10.30.1.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-edge-01",
+        "name": "SG Edge Router 1",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.1",
+        "role": "Primary DC WAN edge router (eBGP to BLR and NYC)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.0.5/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.0.9/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.50.0.13/30", "status": "up", "speed": "40G", "connected_to": "sg-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.14.2/30", "status": "up", "speed": "10G", "connected_to": "blr-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.34.2/30", "status": "up", "speed": "10G", "connected_to": "nyc-edge-01", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.0/24", "next_hop": "sg-spine-01", "next_hop_ip": "10.50.0.6", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-edge-01", "next_hop_ip": "10.99.14.1", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-edge-01", "next_hop_ip": "10.99.14.1", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.30.0.0/16", "next_hop": "nyc-edge-01", "next_hop_ip": "10.99.34.1", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.20.0.0/16", "next_hop": "nyc-edge-01", "next_hop_ip": "10.99.34.1", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-spine-01", "next_hop_ip": "10.50.0.6", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-edge-02",
+        "name": "SG Edge Router 2",
+        "type": "router",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9432F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.2",
+        "role": "Secondary DC WAN edge router (eBGP to BLR and NYC)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.0.17/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.0.21/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/3", "ip_address": "10.50.0.14/30", "status": "up", "speed": "40G", "connected_to": "sg-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.99.14.6/30", "status": "up", "speed": "10G", "connected_to": "blr-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.99.34.6/30", "status": "up", "speed": "10G", "connected_to": "nyc-edge-02", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.0/24", "next_hop": "sg-spine-02", "next_hop_ip": "10.50.0.22", "protocol": "static", "metric": 1, "status": "active"},
+            {"prefix": "10.10.0.0/14", "next_hop": "blr-edge-02", "next_hop_ip": "10.99.14.5", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.42.0.0/16", "next_hop": "blr-edge-02", "next_hop_ip": "10.99.14.5", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.30.0.0/16", "next_hop": "nyc-edge-02", "next_hop_ip": "10.99.34.5", "protocol": "bgp", "metric": 20, "status": "active"},
+            {"prefix": "10.20.0.0/16", "next_hop": "nyc-edge-02", "next_hop_ip": "10.99.34.5", "protocol": "bgp", "metric": 30, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-spine-02", "next_hop_ip": "10.50.0.22", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-spine-01",
+        "name": "SG Spine Switch 1",
+        "type": "spine_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9664F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.5",
+        "role": "Leaf-spine fabric spine (plane A)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.0.6/30", "status": "up", "speed": "100G", "connected_to": "sg-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.0.18/30", "status": "up", "speed": "100G", "connected_to": "sg-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.50.2.1/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.50.2.5/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/3", "ip_address": "10.50.2.9/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-03", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/4", "ip_address": "10.50.2.13/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-04", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.0/28", "next_hop": "sg-leaf-01", "next_hop_ip": "10.50.2.2", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "10.50.1.16/28", "next_hop": "sg-leaf-02", "next_hop_ip": "10.50.2.6", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "10.50.1.32/28", "next_hop": "sg-leaf-03", "next_hop_ip": "10.50.2.10", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "10.50.1.48/28", "next_hop": "sg-leaf-04", "next_hop_ip": "10.50.2.14", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-edge-01", "next_hop_ip": "10.50.0.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-spine-02",
+        "name": "SG Spine Switch 2",
+        "type": "spine_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch Z9664F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.6",
+        "role": "Leaf-spine fabric spine (plane B)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.0.10/30", "status": "up", "speed": "100G", "connected_to": "sg-edge-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.0.22/30", "status": "up", "speed": "100G", "connected_to": "sg-edge-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.50.2.17/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/2", "ip_address": "10.50.2.21/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/3", "ip_address": "10.50.2.25/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-03", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/4", "ip_address": "10.50.2.29/30", "status": "up", "speed": "100G", "connected_to": "sg-leaf-04", "vlan_mode": null, "allowed_vlans": null}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.0/28", "next_hop": "sg-leaf-01", "next_hop_ip": "10.50.2.18", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "10.50.1.16/28", "next_hop": "sg-leaf-02", "next_hop_ip": "10.50.2.22", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "10.50.1.32/28", "next_hop": "sg-leaf-03", "next_hop_ip": "10.50.2.26", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "10.50.1.48/28", "next_hop": "sg-leaf-04", "next_hop_ip": "10.50.2.30", "protocol": "ospf", "metric": 10, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-edge-02", "next_hop_ip": "10.50.0.17", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-leaf-01",
+        "name": "SG Leaf Switch 1",
+        "type": "leaf_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch S5248F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.11",
+        "role": "ToR for server rack 1 (ERP)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.2.2/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.2.18/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.50.1.1/28", "status": "up", "speed": "25G", "connected_to": "sg-server-01", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.0/28", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-spine-01", "next_hop_ip": "10.50.2.1", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-leaf-02",
+        "name": "SG Leaf Switch 2",
+        "type": "leaf_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch S5248F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.12",
+        "role": "ToR for server rack 2 (Auth / Monitoring)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.2.6/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.2.22/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.50.1.17/28", "status": "up", "speed": "25G", "connected_to": "sg-server-02", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.16/28", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-spine-01", "next_hop_ip": "10.50.2.5", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-leaf-03",
+        "name": "SG Leaf Switch 3",
+        "type": "leaf_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch S5248F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.13",
+        "role": "ToR for server rack 3 (DB cluster) — single-homed critical server",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.2.10/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.2.26/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.50.1.33/28", "status": "up", "speed": "25G", "connected_to": "sg-server-03", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.32/28", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-spine-01", "next_hop_ip": "10.50.2.9", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-leaf-04",
+        "name": "SG Leaf Switch 4",
+        "type": "leaf_switch",
+        "vendor": "Dell",
+        "model": "PowerSwitch S5248F-ON",
+        "os": "SONiC",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.14",
+        "role": "ToR for server rack 4 (Jira / Wiki)",
+        "interfaces": [
+            {"name": "Ethernet1/1", "ip_address": "10.50.2.14/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-01", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet1/2", "ip_address": "10.50.2.30/30", "status": "up", "speed": "100G", "connected_to": "sg-spine-02", "vlan_mode": null, "allowed_vlans": null},
+            {"name": "Ethernet2/1", "ip_address": "10.50.1.49/28", "status": "up", "speed": "25G", "connected_to": "sg-server-04", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "10.50.1.48/28", "next_hop": "local", "next_hop_ip": null, "protocol": "connected", "metric": 0, "status": "active"},
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-spine-01", "next_hop_ip": "10.50.2.13", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-server-01",
+        "name": "SG Server Node 1 (ERP)",
+        "type": "server",
+        "vendor": "Dell",
+        "model": "PowerEdge R760",
+        "os": "Ubuntu 22.04",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.21",
+        "role": "ERP application host",
+        "interfaces": [
+            {"name": "eno1", "ip_address": "10.50.1.2/28", "status": "up", "speed": "25G", "connected_to": "sg-leaf-01", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-leaf-01", "next_hop_ip": "10.50.1.1", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-server-02",
+        "name": "SG Server Node 2 (Auth / Monitoring)",
+        "type": "server",
+        "vendor": "Dell",
+        "model": "PowerEdge R760",
+        "os": "Ubuntu 22.04",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.22",
+        "role": "Authentication and monitoring host",
+        "interfaces": [
+            {"name": "eno1", "ip_address": "10.50.1.18/28", "status": "up", "speed": "25G", "connected_to": "sg-leaf-02", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-leaf-02", "next_hop_ip": "10.50.1.17", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-server-03",
+        "name": "SG Server Node 3 (DB Cluster)",
+        "type": "server",
+        "vendor": "Dell",
+        "model": "PowerEdge R760",
+        "os": "Ubuntu 22.04",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.23",
+        "role": "Database cluster host (single-homed to sg-leaf-03)",
+        "interfaces": [
+            {"name": "eno1", "ip_address": "10.50.1.34/28", "status": "up", "speed": "25G", "connected_to": "sg-leaf-03", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-leaf-03", "next_hop_ip": "10.50.1.33", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    },
+    {
+        "id": "sg-server-04",
+        "name": "SG Server Node 4 (Jira / Wiki)",
+        "type": "server",
+        "vendor": "Dell",
+        "model": "PowerEdge R760",
+        "os": "Ubuntu 22.04",
+        "site": "singapore",
+        "status": "up",
+        "management_ip": "10.50.254.24",
+        "role": "Collaboration tooling host (Jira, Wiki)",
+        "interfaces": [
+            {"name": "eno1", "ip_address": "10.50.1.50/28", "status": "up", "speed": "25G", "connected_to": "sg-leaf-04", "vlan_mode": "access", "access_vlan": 200}
+        ],
+        "routes": [
+            {"prefix": "0.0.0.0/0", "next_hop": "sg-leaf-04", "next_hop_ip": "10.50.1.49", "protocol": "static", "metric": 1, "status": "active"}
+        ]
+    }
+]

@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-base text-ink antialiased;
+    background-image:
+      radial-gradient(900px 500px at 78% -8%, rgba(51, 230, 176, 0.06), transparent 60%),
+      radial-gradient(700px 480px at 0% 110%, rgba(88, 166, 255, 0.05), transparent 60%),
+      linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-line bg-panel/90 backdrop-blur-sm shadow-panel;
+  }
+  .panel-head {
+    @apply flex items-center gap-2 px-3.5 py-2.5 border-b border-line/80;
+  }
+  .eyebrow {
+    @apply text-[10px] font-mono uppercase tracking-[0.18em] text-faint;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-line
+      bg-elevated px-3 py-1.5 text-sm font-medium text-ink transition
+      hover:border-edge hover:bg-elevated/70 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-signal {
+    @apply border-signal/40 bg-signal/10 text-signal hover:bg-signal/20 hover:border-signal/60;
+  }
+  .btn-danger {
+    @apply border-critical/40 bg-critical/10 text-critical hover:bg-critical/20;
+  }
+  .field {
+    @apply w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-sm
+      text-ink outline-none transition focus:border-signal/60 focus:ring-1 focus:ring-signal/30;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-md border border-line bg-elevated/60
+      px-1.5 py-0.5 text-[10px] font-mono text-muted;
+  }
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #243140 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #243140;
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #34465a;
+}
+
+/* React Flow theme overrides */
+.react-flow {
+  background: transparent;
+}
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls {
+  border: 1px solid #1c2733;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px -12px rgba(0, 0, 0, 0.7);
+}
+.react-flow__controls-button {
+  background: #0f151e;
+  border-bottom: 1px solid #1c2733;
+  color: #8696a7;
+  width: 28px;
+  height: 28px;
+}
+.react-flow__controls-button:hover {
+  background: #131b26;
+  color: #e6edf3;
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+.react-flow__handle {
+  opacity: 0;
+  pointer-events: none;
+}
+.react-flow__edge-text {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px;
+  fill: #8696a7;
+}
+.react-flow__edge-textbg {
+  fill: #0c1118;
+}

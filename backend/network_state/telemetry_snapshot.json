@@ -1,0 +1,46 @@
+{
+    "timestamp": "2025-06-22T10:00:00Z",
+    "devices": {
+        "blr-core-01": {
+            "cpu_percent": 42,
+            "memory_percent": 65,
+            "uptime_seconds": 8640000,
+            "interface_stats": {
+                "Ethernet1/3": {"tx_bps": 4500000000, "rx_bps": 3200000000, "errors_in": 0, "errors_out": 0, "drops_in": 12, "drops_out": 0},
+                "Ethernet1/4": {"tx_bps": 3900000000, "rx_bps": 2800000000, "errors_in": 0, "errors_out": 0, "drops_in": 4, "drops_out": 0}
+            }
+        },
+        "blr-edge-01": {
+            "cpu_percent": 55,
+            "memory_percent": 60,
+            "uptime_seconds": 12960000,
+            "interface_stats": {
+                "Ethernet2/2": {"tx_bps": 6200000000, "rx_bps": 7100000000, "errors_in": 3, "errors_out": 1, "drops_in": 20, "drops_out": 5}
+            }
+        },
+        "sg-leaf-03": {
+            "cpu_percent": 38,
+            "memory_percent": 58,
+            "uptime_seconds": 5184000,
+            "interface_stats": {
+                "Ethernet2/1": {"tx_bps": 8900000000, "rx_bps": 9400000000, "errors_in": 0, "errors_out": 0, "drops_in": 0, "drops_out": 0}
+            }
+        },
+        "sg-server-03": {
+            "cpu_percent": 71,
+            "memory_percent": 82,
+            "uptime_seconds": 5184000,
+            "interface_stats": {
+                "eno1": {"tx_bps": 9100000000, "rx_bps": 8700000000, "errors_in": 0, "errors_out": 0, "drops_in": 0, "drops_out": 0}
+            }
+        },
+        "sg-edge-01": {
+            "cpu_percent": 47,
+            "memory_percent": 63,
+            "uptime_seconds": 12960000,
+            "interface_stats": {
+                "Ethernet2/1": {"tx_bps": 5400000000, "rx_bps": 6000000000, "errors_in": 1, "errors_out": 0, "drops_in": 8, "drops_out": 2}
+            }
+        }
+    }
+}

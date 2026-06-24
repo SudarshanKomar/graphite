@@ -1,0 +1,80 @@
+[
+    {
+        "id": "erp-service",
+        "name": "Enterprise Resource Planning",
+        "type": "web_application",
+        "site": "singapore",
+        "host_device": "sg-server-01",
+        "port": 443,
+        "protocol": "https",
+        "status": "healthy",
+        "criticality": "critical",
+        "depends_on": ["auth-service", "db-cluster"],
+        "description": "Core ERP system used by all offices"
+    },
+    {
+        "id": "auth-service",
+        "name": "Authentication Service",
+        "type": "auth",
+        "site": "singapore",
+        "host_device": "sg-server-02",
+        "port": 8443,
+        "protocol": "https",
+        "status": "healthy",
+        "criticality": "critical",
+        "depends_on": ["db-cluster"],
+        "description": "LDAP/SSO authentication for all services"
+    },
+    {
+        "id": "db-cluster",
+        "name": "Database Cluster",
+        "type": "database",
+        "site": "singapore",
+        "host_device": "sg-server-03",
+        "port": 5432,
+        "protocol": "tcp",
+        "status": "healthy",
+        "criticality": "critical",
+        "depends_on": [],
+        "description": "Primary PostgreSQL cluster backing ERP, Auth, and collaboration tools"
+    },
+    {
+        "id": "jira-service",
+        "name": "Jira",
+        "type": "web_application",
+        "site": "singapore",
+        "host_device": "sg-server-04",
+        "port": 443,
+        "protocol": "https",
+        "status": "healthy",
+        "criticality": "high",
+        "depends_on": ["auth-service", "db-cluster"],
+        "description": "Issue tracking and project management"
+    },
+    {
+        "id": "wiki-service",
+        "name": "Confluence Wiki",
+        "type": "web_application",
+        "site": "singapore",
+        "host_device": "sg-server-04",
+        "port": 8090,
+        "protocol": "https",
+        "status": "healthy",
+        "criticality": "medium",
+        "depends_on": ["auth-service"],
+        "description": "Internal documentation wiki"
+    },
+    {
+        "id": "monitoring-service",
+        "name": "Observability Platform",
+        "type": "monitoring",
+        "site": "singapore",
+        "host_device": "sg-server-02",
+        "port": 3000,
+        "protocol": "https",
+        "status": "healthy",
+        "criticality": "low",
+        "depends_on": [],
+        "description": "Metrics, logs, and alerting platform"
+    }
+]

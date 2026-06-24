@@ -1,0 +1,117 @@
+"use client";
+
+import { Hexagon, RotateCcw, Wifi, WifiOff, Sparkles } from "lucide-react";
+import { useStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
+
+export function Header() {
+  const global = useStore((s) => s.global);
+  const connected = useStore((s) => s.connected);
+  const llm = useStore((s) => s.llmConfigured);
+  const reset = useStore((s) => s.resetSim);
+  const busy = useStore((s) => s.busy);
+
+  const sites = global?.sites ?? [];
+  const totalUsers = sites.reduce((a, s) => a + s.total_users, 0);
+  const impacted = sites.filter((s) => s.health !== "healthy").length;
+  const devicesDown = sites.reduce((a, s) => a + s.devices_down, 0);
+
+  return (
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-line bg-surface/80 px-4 backdrop-blur-sm">
+      {/* Brand */}
+      <div className="flex items-center gap-2.5">
+        <div className="relative flex h-8 w-8 items-center justify-center">
+          <Hexagon className="h-8 w-8 text-signal" strokeWidth={1.4} />
+          <span className="absolute h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_10px_rgba(51,230,176,0.9)]" />
+        </div>
+        <div className="leading-tight">
+          <div className="font-mono text-[15px] font-semibold tracking-[0.18em] text-ink">
+            GRAPHITE
+          </div>
+          <div className="text-[10px] tracking-wide text-faint">
+            Network Operations Copilot
+          </div>
+        </div>
+      </div>
+
+      {/* Global status */}
+      <div className="hidden items-center gap-5 md:flex">
+        <Stat label="sites" value={String(sites.length)} />
+        <Divider />
+        <Stat label="users" value={totalUsers.toLocaleString()} />
+        <Divider />
+        <Stat
+          label="impacted"
+          value={String(impacted)}
+          tone={impacted ? "high" : "ok"}
+        />
+        <Divider />
+        <Stat
+          label="devices down"
+          value={String(devicesDown)}
+          tone={devicesDown ? "critical" : "ok"}
+        />
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center gap-2.5">
+        <span
+          className={cn(
+            "flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono",
+            llm
+              ? "border-signal/30 bg-signal/10 text-signal"
+              : "border-line bg-elevated text-faint",
+          )}
+          title={llm ? "Gemini agent online" : "LLM not configured (set GEMINI_API_KEY)"}
+        >
+          <Sparkles className="h-3 w-3" /> {llm ? "AI online" : "AI offline"}
+        </span>
+        <span
+          className={cn(
+            "flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono",
+            connected
+              ? "border-healthy/30 bg-healthy/10 text-healthy"
+              : "border-critical/30 bg-critical/10 text-critical",
+          )}
+        >
+          {connected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+          {connected ? "connected" : "offline"}
+        </span>
+        <button onClick={() => reset()} disabled={busy} className="btn h-8 px-3 text-xs">
+          <RotateCcw className={cn("h-3.5 w-3.5", busy && "animate-spin")} /> Reset
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "ok" | "high" | "critical";
+}) {
+  const color =
+    tone === "critical"
+      ? "text-critical"
+      : tone === "high"
+        ? "text-high"
+        : tone === "ok"
+          ? "text-healthy"
+          : "text-ink";
+  return (
+    <div className="text-center">
+      <div className={cn("font-mono text-sm font-semibold leading-none", color)}>
+        {value}
+      </div>
+      <div className="mt-1 text-[9px] uppercase tracking-wider text-faint">{label}</div>
+    </div>
+  );
+}
+
+function Divider() {
+  return <span className="h-6 w-px bg-line" />;
+}

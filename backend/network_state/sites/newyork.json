@@ -1,0 +1,14 @@
+{
+    "id": "site-newyork",
+    "name": "New York Office",
+    "short_name": "newyork",
+    "location": {
+        "city": "New York",
+        "country": "United States",
+        "timezone": "America/New_York"
+    },
+    "as_number": 65003,
+    "prefix_block": "10.30.0.0/16",
+    "employee_count": 2500,
+    "description": "Americas regional office"
+}

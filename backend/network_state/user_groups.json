@@ -1,0 +1,12 @@
+[
+    {"id": "blr-corp-wifi-users", "name": "Bangalore Corporate WiFi Users", "site": "bangalore", "vlan_id": 420, "estimated_users": 5000, "device_types": ["laptop", "mobile"], "description": "Employees connected via corporate wireless"},
+    {"id": "blr-engineering-users", "name": "Bangalore Engineering LAN Users", "site": "bangalore", "vlan_id": 110, "estimated_users": 3000, "device_types": ["desktop", "laptop"], "description": "Wired engineering workstations"},
+    {"id": "blr-voice-users", "name": "Bangalore Voice Users", "site": "bangalore", "vlan_id": 120, "estimated_users": 1000, "device_types": ["phone"], "description": "VoIP desk phones"},
+    {"id": "blr-guest-users", "name": "Bangalore Guest WiFi Users", "site": "bangalore", "vlan_id": 130, "estimated_users": 500, "device_types": ["laptop", "mobile"], "description": "Visitor guest wireless"},
+
+    {"id": "lon-corp-wifi-users", "name": "London Corporate WiFi Users", "site": "london", "vlan_id": 420, "estimated_users": 1500, "device_types": ["laptop", "mobile"], "description": "Employees connected via corporate wireless"},
+    {"id": "lon-engineering-users", "name": "London Engineering LAN Users", "site": "london", "vlan_id": 110, "estimated_users": 1500, "device_types": ["desktop", "laptop"], "description": "Wired workstations"},
+
+    {"id": "nyc-corp-wifi-users", "name": "New York Corporate WiFi Users", "site": "newyork", "vlan_id": 420, "estimated_users": 1200, "device_types": ["laptop", "mobile"], "description": "Employees connected via corporate wireless"},
+    {"id": "nyc-engineering-users", "name": "New York Engineering LAN Users", "site": "newyork", "vlan_id": 110, "estimated_users": 1300, "device_types": ["desktop", "laptop"], "description": "Wired workstations"}
+]

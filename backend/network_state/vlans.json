@@ -1,0 +1,20 @@
+[
+    {"vlan_id": 110, "name": "Engineering LAN", "subnet": "10.11.0.0/16", "gateway": "10.11.0.1", "site": "bangalore", "description": "Wired engineering workstations", "devices": ["blr-core-01", "blr-core-02", "blr-dist-01", "blr-dist-02", "blr-access-f1", "blr-access-f2", "blr-access-f3", "blr-access-f4"]},
+    {"vlan_id": 120, "name": "Voice", "subnet": "10.12.0.0/16", "gateway": "10.12.0.1", "site": "bangalore", "description": "VoIP phones", "devices": ["blr-core-01", "blr-core-02", "blr-dist-01", "blr-access-f1", "blr-access-f2"]},
+    {"vlan_id": 130, "name": "Guest WiFi", "subnet": "10.13.0.0/16", "gateway": "10.13.0.1", "site": "bangalore", "description": "Guest wireless network", "devices": ["blr-core-01", "blr-core-02", "blr-dist-02", "blr-access-f3"]},
+    {"vlan_id": 420, "name": "Corp WiFi", "subnet": "10.42.0.0/16", "gateway": "10.42.0.1", "site": "bangalore", "description": "Corporate wireless network for employees", "devices": ["blr-core-01", "blr-core-02", "blr-dist-01", "blr-dist-02", "blr-access-f1", "blr-access-f2", "blr-access-f3", "blr-access-f4"]},
+    {"vlan_id": 500, "name": "Management", "subnet": "10.10.254.0/24", "gateway": "10.10.254.254", "site": "bangalore", "description": "Out-of-band device management", "devices": ["blr-core-01", "blr-core-02"]},
+    {"vlan_id": 600, "name": "Printers", "subnet": "10.16.0.0/16", "gateway": "10.16.0.1", "site": "bangalore", "description": "Network printers", "devices": ["blr-dist-01", "blr-access-f1", "blr-access-f2"]},
+    {"vlan_id": 700, "name": "IoT", "subnet": "10.17.0.0/16", "gateway": "10.17.0.1", "site": "bangalore", "description": "Building IoT and sensors", "devices": ["blr-dist-02", "blr-access-f3", "blr-access-f4"]},
+
+    {"vlan_id": 110, "name": "Engineering LAN", "subnet": "10.20.10.0/24", "gateway": "10.20.10.1", "site": "london", "description": "Wired workstations", "devices": ["lon-core-01", "lon-core-02", "lon-access-f1", "lon-access-f2", "lon-access-f3"]},
+    {"vlan_id": 420, "name": "Corp WiFi", "subnet": "10.20.42.0/24", "gateway": "10.20.42.1", "site": "london", "description": "Corporate wireless network", "devices": ["lon-core-01", "lon-core-02", "lon-access-f1", "lon-access-f2", "lon-access-f3"]},
+    {"vlan_id": 500, "name": "Management", "subnet": "10.20.254.0/24", "gateway": "10.20.254.254", "site": "london", "description": "Out-of-band device management", "devices": ["lon-core-01", "lon-core-02"]},
+
+    {"vlan_id": 110, "name": "Engineering LAN", "subnet": "10.30.10.0/24", "gateway": "10.30.10.1", "site": "newyork", "description": "Wired workstations", "devices": ["nyc-core-01", "nyc-core-02", "nyc-access-f1", "nyc-access-f2"]},
+    {"vlan_id": 420, "name": "Corp WiFi", "subnet": "10.30.42.0/24", "gateway": "10.30.42.1", "site": "newyork", "description": "Corporate wireless network", "devices": ["nyc-core-01", "nyc-core-02", "nyc-access-f1", "nyc-access-f2"]},
+    {"vlan_id": 500, "name": "Management", "subnet": "10.30.254.0/24", "gateway": "10.30.254.254", "site": "newyork", "description": "Out-of-band device management", "devices": ["nyc-core-01", "nyc-core-02"]},
+
+    {"vlan_id": 110, "name": "DC Management", "subnet": "10.50.254.0/24", "gateway": "10.50.254.254", "site": "singapore", "description": "Data center out-of-band management", "devices": ["sg-spine-01", "sg-spine-02"]},
+    {"vlan_id": 200, "name": "Server Fabric", "subnet": "10.50.1.0/24", "gateway": "10.50.1.1", "site": "singapore", "description": "Server-facing access VLAN in the leaf-spine fabric", "devices": ["sg-leaf-01", "sg-leaf-02", "sg-leaf-03", "sg-leaf-04"]}
+]

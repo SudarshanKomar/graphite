@@ -1,0 +1,14 @@
+{
+    "id": "site-london",
+    "name": "London Office",
+    "short_name": "london",
+    "location": {
+        "city": "London",
+        "country": "United Kingdom",
+        "timezone": "Europe/London"
+    },
+    "as_number": 65002,
+    "prefix_block": "10.20.0.0/16",
+    "employee_count": 3000,
+    "description": "EMEA regional office"
+}

@@ -1,0 +1,14 @@
+{
+    "id": "site-singapore",
+    "name": "Singapore Data Center",
+    "short_name": "singapore",
+    "location": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "timezone": "Asia/Singapore"
+    },
+    "as_number": 65004,
+    "prefix_block": "10.50.0.0/14",
+    "employee_count": 1500,
+    "description": "Primary data center hosting core business services (leaf-spine fabric)"
+}

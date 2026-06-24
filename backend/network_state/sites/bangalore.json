@@ -1,0 +1,14 @@
+{
+    "id": "site-bangalore",
+    "name": "Bangalore Campus",
+    "short_name": "bangalore",
+    "location": {
+        "city": "Bangalore",
+        "country": "India",
+        "timezone": "Asia/Kolkata"
+    },
+    "as_number": 65001,
+    "prefix_block": "10.10.0.0/14",
+    "employee_count": 8000,
+    "description": "Primary engineering campus and HQ"
+}
