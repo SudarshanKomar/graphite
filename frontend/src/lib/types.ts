@@ -71,6 +71,16 @@ export interface SiteUserGroup {
   estimated_users: number;
 }
 
+export interface EndpointGroup {
+  id: string;
+  name: string;
+  zone: string;
+  vlan_id: number;
+  estimated_users: number;
+  device_breakdown: Record<string, number>;
+  access_device: string | null;
+}
+
 export interface SiteTopology {
   site: string;
   site_name: string;
@@ -79,6 +89,7 @@ export interface SiteTopology {
   vlans: SiteVlan[];
   services: SiteService[];
   user_groups: SiteUserGroup[];
+  endpoint_groups?: EndpointGroup[];
 }
 
 export interface DeviceInfo {

@@ -82,6 +82,17 @@ export function TopologyCanvas() {
       setNodes(siteNodes);
       setEdges(wanEdges);
     } else if (view === "site" && siteTopology) {
+      // Build per-device endpoint group map for user badges.
+      const epByDevice = new Map<string, { users: number; groups: typeof siteTopology.endpoint_groups }>();
+      for (const eg of siteTopology.endpoint_groups ?? []) {
+        if (!eg.access_device) continue;
+        const prev = epByDevice.get(eg.access_device);
+        epByDevice.set(eg.access_device, {
+          users: (prev?.users ?? 0) + eg.estimated_users,
+          groups: [...(prev?.groups ?? []), eg],
+        });
+      }
+
       const positioned = layoutSiteDevices(siteTopology.devices);
       const deviceNodes: Node[] = positioned.map((d) => ({
         id: d.id,
@@ -92,6 +103,7 @@ export function TopologyCanvas() {
           device: { id: d.id, name: d.name, device_type: d.device_type, status: d.status },
           impact: impactMap.get(d.id) ?? null,
           isSource: blast?.component_id === d.id,
+          endpointInfo: epByDevice.get(d.id) ?? null,
         },
         draggable: true,
       }));

@@ -13,7 +13,6 @@ import re
 import time
 
 from ..schemas import Message
-from ...tools.base import ToolSchema
 from .base import LLMResponse
 
 _RETRY_DELAY_RE = re.compile(r"retry in ([0-9.]+)s", re.IGNORECASE)
@@ -110,7 +109,7 @@ class GeminiProvider:
     async def complete(
         self,
         messages: list[Message],
-        tools: list[ToolSchema] | None = None,
+        tools: list | None = None,
     ) -> LLMResponse:
         system_instruction, contents = self._split_messages(messages)
         # The SDK call is blocking; run it off the event loop.

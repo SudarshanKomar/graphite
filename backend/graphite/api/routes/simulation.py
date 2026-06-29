@@ -12,20 +12,24 @@ router = APIRouter(prefix="/simulation", tags=["simulation"])
 
 
 def _mutation_names(services: Services) -> set[str]:
-    return {s.name for s in services.registry.list_schemas() if s.category == "mutation"}
+    return {t.name for t in services.mcp_server.list_tools() if t.category == "mutation"}
 
 
 @router.post("/mutate")
 def mutate(req: MutateRequest, services: Services = Depends(get_services)) -> dict:
-    """Apply a single mutation (one of the 13 mutation tools) to the working twin."""
-    if req.mutation_type not in _mutation_names(services):
+    """Apply a single mutation (one of the 13 mutation tools) to the working twin.
+
+    Simulation endpoints call the engine directly (operator-facing REST),
+    bypassing MCP mode enforcement. The mode is an agent-level concern.
+    """
+    valid = _mutation_names(services)
+    if req.mutation_type not in valid:
         raise HTTPException(
             status_code=400,
             detail=f"Unknown mutation_type '{req.mutation_type}'. "
-                   f"Valid: {sorted(_mutation_names(services))}",
+                   f"Valid: {sorted(valid)}",
         )
     method = getattr(services.simulation, req.mutation_type)
-    # GraphiteError (invalid mutation, not found, ...) is handled globally.
     result = method(**req.parameters)
     return {"mutation_type": req.mutation_type, "result": result}
 

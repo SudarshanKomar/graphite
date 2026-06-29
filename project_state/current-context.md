@@ -71,14 +71,69 @@ agent, FastAPI structure, tool registry).
 
 ---
 
-## Next Recommended Tasks (Run 4+)
+## V1 Released
 
-1. Re-run all 3 scenarios live through the UI once Gemini quota resets (Scenario 3
-   end-to-end conclusion was quota-blocked, not logic-blocked).
-2. Optional: per-session working-twin isolation for concurrent users (today a single
-   shared working twin is mutated by the simulation endpoints).
-3. Optional polish: animate agent-driven path highlighting; persist conversation history;
-   add a service-dependency inspector panel.
+V1 is complete, tagged, and frozen. All 3 runs delivered. Architecture preserved.
+
+---
+
+## V2 Implementation — MCP-Native Architecture
+
+**Status**: All 6 phases complete. V2 migration finished.
+
+### What Changed (Backend — Phases 1-5)
+- **Phase 1**: Built `graphite/mcp/` package — `GraphiteMcpServer`, 36 tools, 6 resources,
+  `CapabilityMode` (observe/operate).
+- **Phase 2**: Migrated `ReactAgent` from `ToolRegistry` → `GraphiteMcpServer`.
+- **Phase 3**: Rewired `Services`/`build_services`. Added `GET/POST /agent/mode`.
+- **Phase 4**: Deleted `graphite/tools/` (V1 dead architecture removed).
+- **Phase 5**: Created `graphite/mcp/__main__.py` (stdio) and `mcp.json` (Windsurf/WSL).
+
+### What Changed (Frontend — Phase 6 + Refinement)
+- **Observe/Operate mode UI**: Toggle badge in header (green=observe, amber=operate).
+  Copilot header shows mode tag. Header border tints amber in operate mode.
+- **Resizable panels**: Draggable separators between left rail ↔ canvas ↔ copilot.
+  Min/max constraints (left 220-400px, right 300-600px). Smooth drag resize.
+- **Responsive fixes**: Stats hide below `lg`, brand text hides below `sm`, AI/connection
+  badges hide at narrow widths. No overflow/overlap at any practical width.
+- **Panel sizing**: LeftRail and CopilotPanel fill parent container (no hardcoded widths).
+- **V2 frontend spec**: Created `specs/v2/architecture/frontend-v2.md`.
+- **MCP config**: `mcp.json` updated for Windows+WSL Windsurf configuration.
+
+### V2.1 — Frontend Refinement + Localized Blast Radius
+- **Blast card overlap fix**: CanvasOverlay restructured from separate absolute divs to a
+  single flex-column container. Card flows below controls, no overlap at any width.
+- **Separator rebound fix**: Root cause was stale closure capture in drag callbacks.
+  Fixed by reading live width from `useStore.getState()` inside the handler. Added
+  `minWidth`/`maxWidth` inline styles as CSS safety net.
+- **Localized endpoint groups** (V2.1): Added `endpoint_groups.json` with 10 zone-level
+  groups (floor-1 wireless, floor-1 wired, floor-1 voice, etc.). New `endpoint_group`
+  graph node type with `serves_zone` edges from access devices. Blast radius now
+  traverses these for localized impact.
+  - TC1: `blr-ap-f1` → 625 users (was 0), severity high
+  - TC2: `blr-access-f1` → 1,125 users (was 0), severity critical  
+  - TC3: VLAN 420 removal → 5,000 users (no regression)
+  - TC4: `sg-leaf-03` → 5 services affected (no regression)
+
+### V2.1.1 — Endpoint Group Expansion + Device Breakdowns + Frontend Visibility
+- **Endpoint groups expanded**: All office sites now have full coverage (BLR: 13 groups,
+  LON: 6 groups, NYC: 4 groups = 23 total). Per-site endpoint-group user totals strictly
+  match user-group totals (BLR=9500, LON=3000, NYC=2500). Parity enforced in builder.
+- **Device breakdowns**: Each endpoint group has a `device_breakdown` field with realistic
+  counts (smartphones, laptops, desktops, tablets, printers, IoT, VoIP/conf phones).
+  Breakdown totals validated to match `estimated_users`.
+- **Topology API**: `get_site_topology()` now returns `endpoint_groups` with device_breakdown
+  and access_device info for frontend consumption.
+- **Frontend user badges**: Access-layer devices (APs, access switches) that serve endpoint
+  groups show a compact `👥 N users` badge. Clicking the badge expands an animated panel
+  showing per-zone device breakdown (floor, device type counts).
+- **Version**: Updated to v2.1.1 (pyproject.toml, FastAPI app, project state).
+- **LON/NYC blast radius**: `lon-access-f1` → 1,000 users; `nyc-access-f1` → 1,250 users.
+
+### Test Results
+- Backend: 103 passed, 0 failed, 0 regressions
+- Frontend: `next build` clean (TypeScript + compilation + 3 static pages)
+- V2.1.1 validation: parity check + breakdown consistency + TC1-TC6 all passed
 
 ---
 

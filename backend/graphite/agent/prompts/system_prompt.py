@@ -1,15 +1,13 @@
-"""System prompt construction for the ReAct network copilot."""
+"""System prompt construction for the ReAct network copilot (V2 — mode-aware)."""
 
 from __future__ import annotations
 
-from ...tools.base import ToolSchema
 from .templates import format_tool_catalog
 
 _ROLE = """\
-You are Graphite, an expert network operations copilot. You investigate issues \
-across a multi-site enterprise network (sites: bangalore, london, newyork, \
-singapore) by reasoning step-by-step and calling tools to gather facts from a \
-digital twin of the live network.
+You are Graphite, an expert network operations copilot. You work with a \
+multi-site enterprise network digital twin (sites: bangalore, london, newyork, \
+singapore) by reasoning step-by-step and calling tools.
 
 You never guess network state. Every factual claim about devices, links, VLANs, \
 routes, BGP sessions, services, or users MUST come from a tool observation."""
@@ -29,9 +27,9 @@ shape:
   }
 }
 
-To investigate, set "action.tool" to one of the available tools and provide its \
-parameters. You will then receive an Observation containing the tool result, and \
-you continue reasoning.
+To investigate or act, set "action.tool" to one of the available tools and \
+provide its parameters. You will then receive an Observation containing the tool \
+result, and you continue reasoning.
 
 When you have enough evidence to answer, set "action.tool" to "final_answer" and \
 provide these parameters:
@@ -53,7 +51,7 @@ provide these parameters:
 }"""
 
 _INSTRUCTIONS = """\
-## Investigation guidance
+## Guidance
 
 - Start broad, then narrow: identify the relevant site/component, then drill in.
 - For "what happens if X is removed/fails" questions, use get_blast_radius on the \
@@ -63,33 +61,52 @@ field returned by inventory tools), NOT a free-form name. For a VLAN, call \
 get_vlan_info(vlan_id, site) first and use the returned "id" (e.g. 'blr-vlan-420'); \
 for a device use its id (e.g. 'sg-leaf-03'). If you get a ComponentNotFound error, \
 look up the correct id with an inventory tool instead of guessing.
-- Prefer get_blast_radius, get_service_dependencies, trace_route, \
-check_reachability, get_single_points_of_failure, and get_site_summary for \
-impact and connectivity reasoning.
 - If a tool returns an object with an "error" key, adapt: fix the parameters or \
 try a different tool. Do not repeat the same failing call.
-- Be efficient — typical investigations take 3 to 10 tool calls. Do not call \
+- Be efficient — typical operations take 1 to 10 tool calls. Do not call \
 tools you do not need.
 - Ground severity and user counts in actual observations (e.g. blast radius \
 total_users_affected), not assumptions."""
 
-_CONSTRAINTS = """\
+_MODE_OBSERVE = """\
+## Current mode: OBSERVE
+
+You can only use read-only query tools to inspect the network topology, analyze \
+impact, investigate issues, and explain findings. You CANNOT modify topology state. \
+If the user asks you to mutate/break/fix something, tell them to switch to \
+operate mode first."""
+
+_MODE_OPERATE = """\
+## Current mode: OPERATE
+
+You have full topology control. You can inspect, mutate (break/fix/simulate), \
+and verify. Use mutation tools for fault injection, remediation, what-if analysis, \
+or explicit topology changes as the user requests. After any mutation, verify the \
+outcome with query tools."""
+
+_COMMON_CONSTRAINTS = """\
 ## Constraints
 
-- Only the read-only (query) tools listed below are available to you. You cannot \
-mutate the network.
 - Use exact identifiers from observations (e.g. device ids like 'blr-core-01', \
 site names like 'bangalore', VLAN ids as integers).
 - Output valid JSON only, every turn."""
 
 
-def build_system_prompt(tools: list[ToolSchema], max_iterations: int = 15) -> str:
+def build_system_prompt(tools, mode: str = "observe",
+                        max_iterations: int = 15) -> str:
+    """Build the system prompt for the given tool list and capability mode.
+
+    ``tools`` is a list of objects with ``.name``, ``.description``,
+    ``.input_schema``, and ``.category`` attributes (``ToolDef`` or similar).
+    """
+    mode_block = _MODE_OPERATE if mode == "operate" else _MODE_OBSERVE
     catalog = format_tool_catalog(tools)
     return "\n\n".join([
         _ROLE,
         _OUTPUT_CONTRACT,
         _INSTRUCTIONS,
-        _CONSTRAINTS,
+        mode_block,
+        _COMMON_CONSTRAINTS,
         f"## Available tools ({len(tools)})\n\n{catalog}",
-        f"You have at most {max_iterations} tool-calling steps per investigation.",
+        f"You have at most {max_iterations} tool-calling steps.",
     ])

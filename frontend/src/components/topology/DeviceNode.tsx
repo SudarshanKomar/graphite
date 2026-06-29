@@ -1,23 +1,37 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Users, ChevronDown } from "lucide-react";
 import { deviceMeta } from "@/lib/deviceMeta";
 import { cn } from "@/lib/utils";
-import type { SiteDevice } from "@/lib/types";
+import type { SiteDevice, EndpointGroup } from "@/lib/types";
 
 export interface DeviceNodeData {
   device: SiteDevice;
   impact: "down" | "isolated" | "degraded" | null;
   isSource: boolean;
+  endpointInfo: { users: number; groups: EndpointGroup[] } | null;
   [key: string]: unknown;
 }
 
+const DEVICE_LABELS: Record<string, string> = {
+  smartphones: "Smartphones",
+  laptops: "Laptops",
+  desktops: "Desktops",
+  tablets: "Tablets",
+  printers: "Printers",
+  iot: "IoT devices",
+  voip_phones: "VoIP phones",
+  conference_phones: "Conf. phones",
+};
+
 function DeviceNodeImpl({ data, selected }: NodeProps) {
   const d = data as unknown as DeviceNodeData;
-  const { device, impact, isSource } = d;
+  const { device, impact, isSource, endpointInfo } = d;
   const meta = deviceMeta(device.device_type);
   const Icon = meta.icon;
+  const [expanded, setExpanded] = useState(false);
 
   const down = device.status === "down" || device.status === "removed";
   const degraded = device.status === "degraded";
@@ -81,6 +95,40 @@ function DeviceNodeImpl({ data, selected }: NodeProps) {
           </span>
         )}
       </div>
+
+      {/* V2.1.1: User badge for access-layer devices serving endpoint groups */}
+      {endpointInfo && endpointInfo.users > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          className="mt-1.5 flex w-full items-center justify-between rounded-md border border-line bg-surface/60 px-1.5 py-1 text-[10px] transition hover:border-edge"
+        >
+          <span className="flex items-center gap-1 font-mono text-muted">
+            <Users className="h-3 w-3 text-signal/80" />
+            <span className="text-ink font-semibold">{endpointInfo.users.toLocaleString()}</span>
+            <span>users</span>
+          </span>
+          <ChevronDown className={cn("h-3 w-3 text-faint transition", expanded && "rotate-180")} />
+        </button>
+      )}
+
+      {/* Expandable device breakdown */}
+      {expanded && endpointInfo && (
+        <div className="mt-1 animate-fade-up rounded-md border border-line bg-surface/80 p-1.5">
+          {endpointInfo.groups.map((eg) => (
+            <div key={eg.id} className="mb-1 last:mb-0">
+              <div className="text-[9px] font-mono text-faint truncate">{eg.zone}</div>
+              <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                {Object.entries(eg.device_breakdown).map(([type, count]) => (
+                  <span key={type} className="text-[9px] text-muted">
+                    <span className="text-ink font-mono">{count}</span>{" "}
+                    {DEVICE_LABELS[type] ?? type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

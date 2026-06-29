@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Graphite — Network Operations Copilot",
+  title: "Graphite",
   description:
     "AI-powered network digital twin for topology reasoning, fault simulation, and blast-radius analysis.",
 };

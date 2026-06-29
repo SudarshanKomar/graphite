@@ -47,8 +47,26 @@ Last updated: Run 3 (Frontend + Real Gemini + E2E Demo)
 | `tests/test_tools.py` | complete |
 | `tests/test_agent.py` | complete |
 | `tests/test_api.py` | complete |
+| `tests/test_mcp_http.py` | complete |
 
-**Test run:** `94 passed` (pytest, from `backend/`). Live server verified via `python -m graphite.api`.
+**Test run:** `109 passed` (pytest, from `backend/`). Live server verified via `python -m graphite.api`.
+
+---
+
+## V2.1.1 — HTTP MCP Transport
+
+**Status: COMPLETE**
+
+MCP transport migrated from stdio-only to Streamable HTTP, exposed at `http://127.0.0.1:8000/mcp` within the existing FastAPI backend. No separate service; shared `Services` container; no duplicate state.
+
+| Change | Path | Status |
+|---|---|---|
+| HTTP MCP endpoint | `graphite/api/routes/mcp_http.py` | tested |
+| FastAPI wiring (`_McpMiddleware`) | `graphite/api/app.py` | tested |
+| Windsurf MCP config | `mcp.json`, `~/.codeium/windsurf/mcp_config.json` | complete |
+| MCP HTTP tests (6 tests) | `tests/test_mcp_http.py` | complete |
+
+**Validation:** 20/20 `_validate_mcp.py` checks passed. Both `/mcp` and `/mcp/` return 200. State-consistency verified (MCP mutation visible via shared `TwinManager`).
 
 ## Environment Note
 
@@ -95,3 +113,43 @@ but are API-compatible. Pins remain the intended targets for clean environments.
 - Live Gemini (earlier in Run 3): Scenario 1 (`get_vlan_info`->`get_blast_radius`, critical, ~11s) and Scenario 2 (`get_blast_radius`, critical, conf 1.0, ~7s) fully correct. Scenario 3 first hop correct; completion blocked only by free-tier quota.
 - E2E REST (`_e2e_check.py`, no LLM): 6/6 — health, global topology, all 3 scenario mutate->blast/latency flows, reset.
 - Frontend dev server: Ready in <1s, `GET /` -> 200; browser preview opened against live backend.
+
+---
+
+## V2 — MCP-Native Architecture
+
+**Status: SPEC PHASE** — Specifications revised, audited, and finalized. Implementation NOT started.
+
+Repo restructured: all V1 specs moved to `specs/v1/`, V2 specs in `specs/v2/`.
+Capability modes revised: investigation/simulation → **observe/operate** (ADR-007 rewrite).
+
+### V2 Specifications Delivered
+
+| Spec | Path | Status |
+|---|---|---|
+| V1 archive index | `specs/v1/README.md` | complete |
+| V2 overview | `specs/v2/README.md` | revised |
+| ADR-006 MCP Architecture | `specs/v2/adr/006-mcp-native-architecture.md` | revised |
+| ADR-007 Capability Modes | `specs/v2/adr/007-capability-modes.md` | **rewritten** (observe/operate) |
+| ADR-008 LangChain Evaluation | `specs/v2/adr/008-langchain-evaluation.md` | complete |
+| MCP Server Design | `specs/v2/architecture/mcp-server-design.md` | complete |
+| MCP Tool Contracts | `specs/v2/architecture/mcp-tool-contracts.md` | complete |
+| Agent ↔ MCP Integration | `specs/v2/architecture/agent-mcp-integration.md` | complete |
+| Safety Model | `specs/v2/architecture/safety-model.md` | complete |
+| Migration Plan | `specs/v2/architecture/migration-plan.md` | revised |
+| **V2 Roadmap** | **`specs/v2/implementation/v2-roadmap.md`** | **new** |
+
+### V2 Implementation Modules (NOT STARTED)
+
+| Module | Path | Status | Notes |
+|---|---|---|---|
+| MCP server | `graphite/mcp/server.py` | not started | Core MCP server with tool/resource registration |
+| MCP tools | `graphite/mcp/tools.py` | not started | 34 tools + 2 meta-tools ported from ToolRegistry |
+| MCP resources | `graphite/mcp/resources.py` | not started | 3 read-only resources (overview, site, diff) |
+| Capability modes | `graphite/mcp/mode.py` | not started | Mode state management (observe/operate) |
+| Agent MCP client | `graphite/agent/react_agent.py` | not started | Swap ToolRegistry for MCP server calls |
+| System prompt update | `graphite/agent/prompts/` | not started | Mode-aware prompt generation |
+| App wiring | `graphite/api/app.py` | not started | Wire MCP server into Services |
+| ToolRegistry removal | `graphite/tools/` | not started | Remove after MCP is validated |
+| External agent support | `graphite/mcp/__main__.py` | not started | stdio entry point |
+| MCP tools tests | `tests/test_mcp_tools.py` | not started | Replace test_tools.py |

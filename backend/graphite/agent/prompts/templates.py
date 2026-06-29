@@ -4,15 +4,19 @@ from __future__ import annotations
 
 import json
 
-from ...tools.base import ToolSchema
 
+def format_tool_catalog(tools) -> str:
+    """Render the available tools as a compact, LLM-readable catalog.
 
-def format_tool_catalog(tools: list[ToolSchema]) -> str:
-    """Render the available tools as a compact, LLM-readable catalog."""
+    Accepts objects with ``.name``, ``.description``, and either
+    ``.input_schema`` (V2 ``ToolDef``) or ``.parameters`` (V1 ``ToolSchema``).
+    """
     lines: list[str] = []
     for schema in sorted(tools, key=lambda s: s.name):
-        params = schema.parameters.get("properties", {})
-        required = set(schema.parameters.get("required", []))
+        # Support both V2 ToolDef (input_schema) and V1 ToolSchema (parameters).
+        param_spec = getattr(schema, "input_schema", None) or getattr(schema, "parameters", {})
+        params = param_spec.get("properties", {})
+        required = set(param_spec.get("required", []))
         if params:
             parts = []
             for name, spec in params.items():
@@ -22,7 +26,10 @@ def format_tool_catalog(tools: list[ToolSchema]) -> str:
             param_str = ", ".join(parts)
         else:
             param_str = ""
-        lines.append(f"- {schema.name}({param_str}) -> {schema.returns}\n    {schema.description}")
+        # ToolDef has no .returns; use description only.
+        returns = getattr(schema, "returns", "")
+        suffix = f" -> {returns}" if returns else ""
+        lines.append(f"- {schema.name}({param_str}){suffix}\n    {schema.description}")
     return "\n".join(lines)
 
 

@@ -1,16 +1,17 @@
 """ReAct agent: a Thought -> Action -> Observation loop (ADR-003).
 
-The agent streams :class:`AgentEvent`s as it reasons. It only ever calls the
-read-only (query) tools exposed by the registry; mutation tools are never
-offered to the model. Malformed model output is recovered with corrective
-retries, and the loop terminates on ``final_answer`` or ``MAX_ITERATIONS``.
+The agent streams :class:`AgentEvent`s as it reasons. In V2 the agent
+dispatches tool calls through the :class:`GraphiteMcpServer` (ADR-006);
+mode-based access control (observe/operate) is enforced by the MCP server,
+not the agent. Malformed model output is recovered with corrective retries,
+and the loop terminates on ``final_answer`` or ``MAX_ITERATIONS``.
 """
 
 from __future__ import annotations
 
 from typing import AsyncGenerator
 
-from ..tools.base import ToolRegistry
+from ..mcp.server import GraphiteMcpServer, ModeViolation
 from .llm.base import LLMProvider
 from .parser import AgentParseError, parse_agent_response
 from .prompts import (
@@ -39,15 +40,15 @@ class ReactAgent:
     MAX_ITERATIONS = 15
     MAX_PARSE_RETRIES = 3
 
-    def __init__(self, llm: LLMProvider, tool_registry: ToolRegistry,
+    def __init__(self, llm: LLMProvider, mcp_server: GraphiteMcpServer,
                  system_prompt: str | None = None, max_iterations: int | None = None):
         self._llm = llm
-        self._tools = tool_registry
-        self._agent_tools = tool_registry.list_agent_tools()
-        self._agent_tool_names = {s.name for s in self._agent_tools}
+        self._mcp = mcp_server
+        self._available_tools = mcp_server.list_tools()
         self.max_iterations = max_iterations or self.MAX_ITERATIONS
         self._system_prompt = system_prompt or build_system_prompt(
-            self._agent_tools, self.max_iterations
+            self._available_tools, self._mcp.mode.current_str,
+            self.max_iterations,
         )
 
     # ------------------------------------------------------------------ #
@@ -104,7 +105,7 @@ class ReactAgent:
         """Call the LLM and parse, retrying with corrective feedback on failure."""
         last_error: AgentParseError | None = None
         for attempt in range(self.MAX_PARSE_RETRIES):
-            result = await self._llm.complete(messages, self._agent_tools)
+            result = await self._llm.complete(messages, self._available_tools)
             raw = result.raw_text
             messages.append(Message(role="assistant", content=raw))
             try:
@@ -118,16 +119,24 @@ class ReactAgent:
         raise last_error if last_error else AgentParseError("unknown parse failure")
 
     def _execute_tool(self, tool: str, parameters: dict) -> dict:
-        """Execute a query tool, refusing unknown or non-query (mutation) tools."""
-        if tool not in self._agent_tool_names:
+        """Execute a tool via the MCP server.
+
+        Mode enforcement is handled by the MCP server (ADR-007). Unknown tools
+        and mode violations are surfaced as structured error observations so the
+        agent can adapt.
+        """
+        try:
+            return self._mcp.call_tool(tool, parameters)
+        except KeyError:
             return {
                 "error": "ToolNotAvailable",
                 "message": (
-                    f"Tool '{tool}' is not available. Choose one of the read-only "
+                    f"Tool '{tool}' is not available. Choose one of the "
                     "tools listed in the system prompt, or use 'final_answer'."
                 ),
             }
-        return self._tools.execute(tool, parameters)
+        except ModeViolation as exc:
+            return {"error": "ModeViolation", "message": str(exc)}
 
     def _build_final_answer(self, params: dict) -> FinalAnswerEvent:
         confidence = params.get("confidence", 0.0)

@@ -222,6 +222,16 @@ def get_site_topology(graph: GraphWrapper, site: str) -> dict:
         "estimated_users": g.get("estimated_users", 0),
     } for g in graph.get_user_groups(site=site)]
 
+    endpoint_groups = [{
+        "id": eg["id"],
+        "name": eg.get("name"),
+        "zone": eg.get("zone"),
+        "vlan_id": eg.get("vlan_id"),
+        "estimated_users": eg.get("estimated_users", 0),
+        "device_breakdown": eg.get("device_breakdown", {}),
+        "access_device": eg.get("access_device"),
+    } for eg in graph.get_endpoint_groups(site=site)]
+
     return {
         "site": site,
         "site_name": site_node.get("name"),
@@ -230,6 +240,7 @@ def get_site_topology(graph: GraphWrapper, site: str) -> dict:
         "vlans": vlans,
         "services": services,
         "user_groups": user_groups,
+        "endpoint_groups": endpoint_groups,
     }
 
 

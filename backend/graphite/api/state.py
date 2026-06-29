@@ -1,8 +1,8 @@
-"""Application service container and wiring.
+"""Application service container and wiring (V2 — MCP-native).
 
-Builds the single shared object graph (twin -> engines -> tool registry ->
-LLM provider) used by all API routes. A fresh :class:`ReactAgent` is created per
-request (cheap), but the heavy components are built once at startup.
+Builds the single shared object graph (twin → engines → MCP server →
+LLM provider) used by all API routes. A fresh :class:`ReactAgent` is created
+per request (cheap), but the heavy components are built once at startup.
 """
 
 from __future__ import annotations
@@ -12,8 +12,8 @@ from dataclasses import dataclass
 from ..agent.react_agent import ReactAgent
 from ..analysis import AnalysisEngine
 from ..config import Settings, get_settings
+from ..mcp import GraphiteMcpServer
 from ..simulation import SimulationEngine
-from ..tools import ToolContext, ToolRegistry, build_default_registry
 from ..twin import TwinBuilder, TwinManager
 
 
@@ -25,7 +25,7 @@ class Services:
     twin_manager: TwinManager
     analysis: AnalysisEngine
     simulation: SimulationEngine
-    registry: ToolRegistry
+    mcp_server: GraphiteMcpServer
     llm_provider: object | None = None
 
     @property
@@ -37,7 +37,7 @@ class Services:
             raise RuntimeError("No LLM provider configured (set GEMINI_API_KEY)")
         return ReactAgent(
             self.llm_provider,
-            self.registry,
+            self.mcp_server,
             max_iterations=self.settings.agent_max_iterations,
         )
 
@@ -70,10 +70,7 @@ def build_services(settings: Settings | None = None,
 
     analysis = AnalysisEngine(twin_manager)
     simulation = SimulationEngine(twin_manager)
-    registry = build_default_registry(
-        ToolContext(simulation_engine=simulation, analysis_engine=analysis,
-                    twin_manager=twin_manager)
-    )
+    mcp_server = GraphiteMcpServer(analysis, simulation, twin_manager)
 
     provider = llm_provider if llm_provider is not None else _build_llm_provider(settings)
 
@@ -82,6 +79,6 @@ def build_services(settings: Settings | None = None,
         twin_manager=twin_manager,
         analysis=analysis,
         simulation=simulation,
-        registry=registry,
+        mcp_server=mcp_server,
         llm_provider=provider,
     )

@@ -1,12 +1,12 @@
-"""Shared pytest fixtures."""
+"""Shared pytest fixtures (V2 — MCP-native)."""
 
 from pathlib import Path
 
 import pytest
 
 from graphite.analysis import AnalysisEngine
+from graphite.mcp import GraphiteMcpServer
 from graphite.simulation import SimulationEngine
-from graphite.tools import ToolContext, build_default_registry
 from graphite.twin import TwinBuilder, TwinManager
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "network_state"
@@ -38,6 +38,6 @@ def sim(twin) -> SimulationEngine:
 
 
 @pytest.fixture
-def registry(twin, sim, analysis):
-    ctx = ToolContext(simulation_engine=sim, analysis_engine=analysis, twin_manager=twin)
-    return build_default_registry(ctx)
+def mcp_server(twin, sim, analysis) -> GraphiteMcpServer:
+    """V2 MCP server wired to fresh engines."""
+    return GraphiteMcpServer(analysis, sim, twin)

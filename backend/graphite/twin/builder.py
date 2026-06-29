@@ -39,6 +39,7 @@ class TwinBuilder:
         self._bgp: list[dict] = []
         self._services: list[dict] = []
         self._user_groups: list[dict] = []
+        self._endpoint_groups: list[dict] = []
         self._telemetry: dict = {}
 
     # ------------------------------------------------------------------ #
@@ -58,6 +59,7 @@ class TwinBuilder:
         self._load_vlans(graph)
         self._load_services(graph)
         self._load_user_groups(graph)
+        self._load_endpoint_groups(graph)
 
         self._validate_graph(graph)
         return graph
@@ -82,6 +84,8 @@ class TwinBuilder:
         self._bgp = self._read("bgp_peers.json")
         self._services = self._read("services.json")
         self._user_groups = self._read("user_groups.json")
+        ep_path = self.data_dir / "endpoint_groups.json"
+        self._endpoint_groups = json.loads(ep_path.read_text(encoding="utf-8")) if ep_path.exists() else []
         self._telemetry = self._read("telemetry_snapshot.json")
 
     # ------------------------------------------------------------------ #
@@ -244,6 +248,31 @@ class TwinBuilder:
             if vlan_node in graph:
                 graph.add_edge(vlan_node, grp["id"], key="serves", relation="serves")
 
+    def _load_endpoint_groups(self, graph: nx.MultiDiGraph) -> None:
+        """V2.1.1: locality-aware endpoint groups with device breakdowns."""
+        for eg in self._endpoint_groups:
+            graph.add_node(
+                eg["id"],
+                node_type="endpoint_group",
+                name=eg["name"],
+                site=eg["site"],
+                zone=eg.get("zone"),
+                vlan_id=eg["vlan_id"],
+                estimated_users=eg["estimated_users"],
+                device_breakdown=eg.get("device_breakdown", {}),
+                access_device=eg.get("access_device"),
+                description=eg.get("description"),
+            )
+            graph.add_edge(eg["id"], f"site-{eg['site']}", key="belongs_to",
+                           relation="belongs_to")
+            if eg.get("access_device") and eg["access_device"] in graph:
+                graph.add_edge(eg["access_device"], eg["id"],
+                               key="serves_zone", relation="serves_zone")
+
+        # V2.1.1 invariant: per-site endpoint-group user total must equal
+        # user-group user total.
+        self._validate_endpoint_group_parity()
+
     def _load_links(self, graph: nx.MultiDiGraph) -> None:
         for link in self._links:
             attrs = {
@@ -263,6 +292,34 @@ class TwinBuilder:
     # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
+    def _validate_endpoint_group_parity(self) -> None:
+        """Ensure per-site endpoint-group users == user-group users.
+
+        Only validates sites that have at least one endpoint group. Sites with
+        no endpoint groups (e.g. Singapore DC) are skipped.
+        """
+        if not self._endpoint_groups:
+            return
+        from collections import defaultdict
+        eg_by_site: dict[str, int] = defaultdict(int)
+        for eg in self._endpoint_groups:
+            eg_by_site[eg["site"]] += eg["estimated_users"]
+
+        ug_by_site: dict[str, int] = defaultdict(int)
+        for ug in self._user_groups:
+            ug_by_site[ug["site"]] += ug["estimated_users"]
+
+        errors: list[str] = []
+        for site, eg_total in eg_by_site.items():
+            ug_total = ug_by_site.get(site, 0)
+            if eg_total != ug_total:
+                errors.append(
+                    f"Endpoint-group user parity mismatch for site '{site}': "
+                    f"endpoint_groups={eg_total}, user_groups={ug_total}"
+                )
+        if errors:
+            raise ValidationError(errors)
+
     @staticmethod
     def _vlan_node_id(site: str, vlan_id: int) -> str:
         prefix = _SITE_PREFIX.get(site, site[:3])

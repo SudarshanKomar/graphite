@@ -58,28 +58,26 @@ export function CanvasOverlay() {
         </div>
       </div>
 
-      {/* Top-right controls */}
-      <div className="pointer-events-none absolute right-4 top-4 z-10 flex items-center gap-2">
-        {blast && (
-          <button
-            onClick={toggleBlast}
-            className={cn("btn pointer-events-auto h-8 px-2.5 text-xs", showBlast && "btn-danger")}
-          >
-            <Radar className="h-3.5 w-3.5" />
-            {showBlast ? "Hide" : "Show"} blast radius
-          </button>
-        )}
-        <div className="pointer-events-auto">
+      {/* Top-right: controls + blast card stacked vertically */}
+      <div className="pointer-events-none absolute right-4 top-4 z-10 flex flex-col items-end gap-2">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+          {blast && (
+            <button
+              onClick={toggleBlast}
+              className={cn("btn h-8 px-2.5 text-xs", showBlast && "btn-danger")}
+            >
+              <Radar className="h-3.5 w-3.5" />
+              {showBlast ? "Hide" : "Show"} blast radius
+            </button>
+          )}
           <Legend />
         </div>
+        {showBlast && blast && (
+          <div className="pointer-events-auto w-[300px] max-w-[calc(100vw-2rem)] animate-fade-up">
+            <BlastRadiusCard />
+          </div>
+        )}
       </div>
-
-      {/* Blast radius summary card */}
-      {showBlast && blast && (
-        <div className="absolute right-4 top-16 z-10 w-[300px] animate-fade-up">
-          <BlastRadiusCard />
-        </div>
-      )}
 
       {/* Connecting / empty state */}
       {!global && (

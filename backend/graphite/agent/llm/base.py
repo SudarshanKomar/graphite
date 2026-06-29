@@ -1,8 +1,9 @@
 """LLM provider abstraction.
 
 The agent depends only on this protocol, so concrete providers (Gemini, OpenAI,
-Anthropic, local, enterprise) are swappable. Run 1 ships the interface plus a
-Gemini stub; the concrete call path is wired in a later run.
+Anthropic, local, enterprise) are swappable. The ``tools`` parameter is a
+generic list (e.g. ``ToolDef`` from the MCP package); providers that need native
+tool schemas transform them, otherwise they ignore the param.
 """
 
 from __future__ import annotations
@@ -11,7 +12,6 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 from ..schemas import AgentResponse, Message
-from ...tools.base import ToolSchema
 
 
 @dataclass
@@ -28,6 +28,6 @@ class LLMProvider(Protocol):
     async def complete(
         self,
         messages: list[Message],
-        tools: list[ToolSchema] | None = None,
+        tools: list | None = None,
     ) -> LLMResponse:
         ...

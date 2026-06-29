@@ -25,11 +25,20 @@ export interface AgentTurn {
 }
 export type ChatTurn = UserTurn | AgentTurn;
 
+export type CapabilityMode = "observe" | "operate";
+
 interface AppState {
   // connection
   connected: boolean;
   llmConfigured: boolean;
   error: string | null;
+
+  // capability mode (V2)
+  capabilityMode: CapabilityMode;
+
+  // panel widths (V2 resizable)
+  leftWidth: number;
+  rightWidth: number;
 
   // topology
   view: "global" | "site";
@@ -69,6 +78,9 @@ interface AppState {
   toggleBlast: () => void;
   clearBlast: () => void;
   setError: (msg: string | null) => void;
+  setMode: (mode: CapabilityMode) => Promise<void>;
+  setLeftWidth: (w: number) => void;
+  setRightWidth: (w: number) => void;
   runAgent: (query: string) => void;
   cancelAgent: () => void;
 }
@@ -80,6 +92,10 @@ export const useStore = create<AppState>((set, get) => ({
   connected: false,
   llmConfigured: false,
   error: null,
+
+  capabilityMode: "observe",
+  leftWidth: 320,
+  rightWidth: 400,
 
   view: "global",
   global: null,
@@ -106,6 +122,11 @@ export const useStore = create<AppState>((set, get) => ({
     } catch {
       set({ connected: false });
     }
+    // Fetch capability mode from backend
+    try {
+      const m = await api.getMode();
+      set({ capabilityMode: m.mode as CapabilityMode });
+    } catch { /* backend may be older — default observe */ }
     await get().loadGlobal();
     await get().refresh();
   },
@@ -200,6 +221,18 @@ export const useStore = create<AppState>((set, get) => ({
   toggleBlast: () => set((s) => ({ showBlast: !s.showBlast })),
   clearBlast: () => set({ blast: null, blastLabel: null, showBlast: false }),
   setError: (msg) => set({ error: msg }),
+
+  setMode: async (mode) => {
+    try {
+      const r = await api.setMode(mode);
+      set({ capabilityMode: r.current_mode as CapabilityMode });
+    } catch (e) {
+      set({ error: (e as Error).message });
+    }
+  },
+
+  setLeftWidth: (w) => set({ leftWidth: Math.max(220, Math.min(400, w)) }),
+  setRightWidth: (w) => set({ rightWidth: Math.max(300, Math.min(600, w)) }),
 
   runAgent: (query: string) => {
     if (get().isStreaming || !query.trim()) return;

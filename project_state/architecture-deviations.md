@@ -149,6 +149,25 @@ If empty, implementation matches specs.
 
 ---
 
+## V2 Planned Architecture Changes (NOT YET IMPLEMENTED)
+
+The following changes are specified in `specs/v2/` but have not been implemented. They are
+documented here so future sessions understand the planned evolution.
+
+- **ToolRegistry → MCP Server** (ADR-006): The custom `ToolRegistry` / `ToolSchema` /
+  `ToolContext` abstraction will be replaced by a Graphite MCP Server. The agent becomes an
+  MCP client. External agents gain access via stdio.
+- **Query/mutation split → Capability modes** (ADR-007, revised): V1's hard split (agent
+  sees only query tools) evolves to mode-based access. **Observe** mode (default, read-only)
+  and **operate** mode (full topology control — destructive, restorative, analytical,
+  remedial mutations). MCP server enforces modes at the protocol level.
+- **LangChain** (ADR-008): Evaluated and rejected for V2. Custom ReAct agent preserved.
+
+These are spec-phase decisions. No code has been modified. V1 architecture remains the
+running implementation.
+
+---
+
 ## D11: Gemini free-tier quota limits live agent testing
 
 - **Context:** `gemini-2.5-flash` free tier enforces tight per-minute and daily request

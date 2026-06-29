@@ -125,6 +125,19 @@ class GraphWrapper:
         filters = {"site": site} if site is not None else {}
         return self.get_nodes_by_type("user_group", **filters)
 
+    def get_endpoint_groups(self, site: str | None = None) -> list[dict]:
+        filters = {"site": site} if site is not None else {}
+        return self.get_nodes_by_type("endpoint_group", **filters)
+
+    def get_zones_served_by(self, device_id: str) -> list[dict]:
+        """Return endpoint_group nodes directly served by a device (serves_zone edges)."""
+        groups = []
+        for edge in self.get_edges_out(device_id, "serves_zone"):
+            target = edge["target"]
+            if self.node_exists(target) and self.get_node_type(target) == "endpoint_group":
+                groups.append(self.get_node(target))
+        return groups
+
     # ------------------------------------------------------------------ #
     # Domain-specific helpers
     # ------------------------------------------------------------------ #

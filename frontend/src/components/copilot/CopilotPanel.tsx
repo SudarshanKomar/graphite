@@ -18,6 +18,7 @@ export function CopilotPanel() {
   const llm = useStore((s) => s.llmConfigured);
   const runAgent = useStore((s) => s.runAgent);
   const cancelAgent = useStore((s) => s.cancelAgent);
+  const mode = useStore((s) => s.capabilityMode);
 
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -34,7 +35,7 @@ export function CopilotPanel() {
   }
 
   return (
-    <aside className="flex w-[400px] shrink-0 flex-col border-l border-line bg-surface/50">
+    <aside className="flex h-full w-full flex-col bg-surface/50">
       {/* Header */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-line px-4">
         <div className="flex items-center gap-2">
@@ -42,6 +43,16 @@ export function CopilotPanel() {
             <Bot className="h-3.5 w-3.5" />
           </span>
           <span className="text-sm font-semibold text-ink">Copilot</span>
+          <span
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wide",
+              mode === "operate"
+                ? "bg-high/15 text-high"
+                : "bg-signal/10 text-signal/80",
+            )}
+          >
+            {mode}
+          </span>
           {isStreaming && (
             <span className="flex items-center gap-1 text-[10px] font-mono text-signal">
               <span className="h-1.5 w-1.5 animate-blink rounded-full bg-signal" /> investigating

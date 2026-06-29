@@ -11,12 +11,11 @@ import json
 from typing import Callable
 
 from ..schemas import Message
-from ...tools.base import ToolSchema
 from .base import LLMResponse
 
 # A response may be a raw JSON string or a dict (serialised automatically).
 Response = str | dict
-Handler = Callable[[list[Message], "list[ToolSchema] | None"], Response]
+Handler = Callable[[list[Message], "list | None"], Response]
 
 
 class MockProvider:
@@ -33,7 +32,7 @@ class MockProvider:
     async def complete(
         self,
         messages: list[Message],
-        tools: list[ToolSchema] | None = None,
+        tools: list | None = None,
     ) -> LLMResponse:
         self.calls.append(list(messages))
         if self._handler is not None:

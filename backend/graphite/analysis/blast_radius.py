@@ -161,8 +161,13 @@ def _device_blast(graph: GraphWrapper, device_id: str) -> dict:
 
     affected_services = _build_service_impacts(graph, services_down, services_degraded)
 
-    # User groups directly affected: VLANs solely carried by this device.
+    # V1 path: VLAN-wide user groups (only triggers when entire VLAN loses carriers).
     affected_user_groups, total_users = _user_groups_for_devices(graph, {device_id})
+
+    # V2.1 path: locality-aware endpoint groups served by the failed device(s).
+    ep_groups, ep_users = _endpoint_groups_for_devices(graph, down_devices)
+    affected_user_groups += ep_groups
+    total_users += ep_users
 
     return {
         "status": graph.get_node(device_id).get("status"),
@@ -171,6 +176,33 @@ def _device_blast(graph: GraphWrapper, device_id: str) -> dict:
         "affected_user_groups": affected_user_groups,
         "total_users_affected": total_users,
     }
+
+
+def _endpoint_groups_for_devices(graph: GraphWrapper, device_ids: set[str]):
+    """V2.1: Endpoint groups directly served by any device in the set.
+
+    Uses the ``serves_zone`` graph relationship (device → endpoint_group).
+    This captures localized impact: AP failure → floor zone outage, access
+    switch failure → floor wired/wireless outage, etc.
+    """
+    affected = []
+    total = 0
+    seen: set[str] = set()
+    for dev_id in device_ids:
+        for grp in graph.get_zones_served_by(dev_id):
+            gid = grp["id"]
+            if gid in seen:
+                continue
+            seen.add(gid)
+            users = grp.get("estimated_users", 0)
+            affected.append({
+                "id": gid,
+                "name": grp.get("name"),
+                "estimated_users": users,
+                "impact": "disconnected",
+            })
+            total += users
+    return affected, total
 
 
 def _user_groups_for_devices(graph: GraphWrapper, device_ids: set[str]):

@@ -176,3 +176,150 @@ Chronological implementation journal. Newest entries at the bottom of each run.
 ### Run 3 complete
 - Topology-first console + persistent copilot + frictionless fault simulation, wired to the
   live backend. Architecture unchanged; all changes additive or tuning.
+
+---
+
+## V1 Released
+
+V1 is complete and tagged. Runs 1–3 delivered the full stack: deterministic backend,
+AI copilot, operator console, 3 validated demo scenarios.
+
+---
+
+## V2 Spec Phase — MCP-Native Architecture
+
+### Context
+- Architect evaluation suggested making Graphite consumable by external agents (IDE tools,
+  Claude Desktop, enterprise orchestrators). MCP is the standard protocol for this.
+- Also suggested evaluating LangChain as an agent framework alternative.
+
+### Decisions made
+- **ADR-006**: Replace custom `ToolRegistry` with a Graphite MCP Server. MCP becomes the
+  canonical interface. ToolRegistry is removed (not wrapped).
+- **ADR-007**: Replace V1's hard query/mutation split with capability modes
+  (investigation/simulation). MCP server enforces mode-based access.
+- **ADR-008**: LangChain formally evaluated. Conclusion: does not add value for Graphite V2.
+  Custom ReAct agent preserved. One-axis-at-a-time principle (MCP first).
+
+### V2 specs generated
+- `specs/v1/README.md` — V1 spec archive index
+- `specs/v2/README.md` — V2 overview and architecture diagram
+- `specs/v2/adr/006-mcp-native-architecture.md` — MCP migration ADR
+- `specs/v2/adr/007-capability-modes.md` — capability modes ADR
+- `specs/v2/adr/008-langchain-evaluation.md` — LangChain evaluation ADR
+- `specs/v2/architecture/mcp-server-design.md` — server structure, tools, resources, transport
+- `specs/v2/architecture/mcp-tool-contracts.md` — all 36 tools with enriched descriptions
+- `specs/v2/architecture/agent-mcp-integration.md` — agent migration (~30 lines changed)
+- `specs/v2/architecture/safety-model.md` — 4-layer mutation defense
+- `specs/v2/architecture/migration-plan.md` — 6-step plan, ~7-11 days, rollback strategy
+
+### Design reasoning highlights
+- **MCP primitives**: Tools (yes, all 34+2 meta), Resources (yes, 3 curated), Prompts (no —
+  agents compose their own). Justified per-primitive, not blindly adopted.
+- **In-process transport**: Internal ReAct agent calls MCP server methods directly (no
+  serialization). External agents use stdio. SSE transport deferred.
+- **Tool descriptions**: Enriched from 1-line V1 summaries to multi-sentence with parameter
+  guidance, ID format examples, and severity threshold documentation.
+- **Safety**: Investigation mode (default) → mutation refused at MCP server level. Simulation
+  mode requires explicit opt-in. Defense-in-depth with system prompt + server enforcement.
+
+### V2 spec phase complete
+- No code changes in this phase. All 10 spec files delivered. Project state updated.
+  Ready for V2 implementation.
+
+---
+
+## V2 Spec Revision — Architecture Corrections + Repo Cleanup + Roadmap
+
+### Repo cleanup
+- Moved all V1 spec directories (`adr/`, `audit/`, `demo/`, `frontend/`, `implementation/`,
+  `schemas/`) from `specs/` root into `specs/v1/` via shell `mv`.
+- Spec repo now has clean `specs/v1/` + `specs/v2/` structure with no root-level clutter.
+- Updated all V2 cross-references to `specs/v1/` paths.
+
+### Capability mode redesign (ADR-007 rewrite)
+- **Old model**: investigation / simulation / remediation (phase-oriented, too narrow).
+  Treated mutations only as fault injection. Wrong — mutations are general topology
+  operations: destructive, restorative, analytical, remedial.
+- **New model**: **observe** (read-only default) / **operate** (full topology control).
+  Framed around agent autonomy level, not tool categories. Two modes is simpler and
+  covers all V2 use cases (investigation, what-if, explicit mutation, remediation).
+- Cascaded observe/operate naming through all V2 specs: ADR-007, safety model, tool
+  contracts, agent integration, server design, migration plan, README.
+
+### Consumer-aware behavior
+- Added section to safety model documenting Graphite UI vs external IDE behavior.
+- Graphite UI: agent can be concise (UI visualizes topology state).
+- External IDE: agent responses must be self-contained (no visual context).
+- No code branching needed — same MCP tool results, different system prompt guidance.
+
+### Implementation roadmap (new)
+- Created `specs/v2/implementation/v2-roadmap.md` — 6-phase plan with per-phase goals,
+  modules, validation criteria, risks, and rollback strategy.
+- Phases: MCP server → agent migration → app wiring → ToolRegistry removal →
+  external agent (stdio) → frontend mode UI. Estimated ~7-11 days total.
+
+### Audit fixes
+- Fixed stale `mcp_client.py` reference in ADR-006 (agent calls server directly, no
+  separate client module).
+- Fixed tools/list contradiction: ADR-007 says tools are always listed (with annotations),
+  but server design code was filtering. Fixed server design to match ADR-007.
+- Fixed stale meta-tool description (still said "investigation/simulation").
+- Fixed stale system prompt reference (still said "simulation mode").
+
+### V2 spec revision complete
+- No code changes. 12 spec files updated/created. Project state updated.
+
+---
+
+## V2 Implementation — MCP-Native Architecture (Phases 1–5)
+
+### Phase 1 — MCP Server Foundation
+- Created `graphite/mcp/` package: `mode.py` (CapabilityMode enum + state),
+  `tools.py` (36 tool definitions with enriched multi-sentence descriptions),
+  `resources.py` (6 resources — overview, 4 per-site, diff),
+  `server.py` (GraphiteMcpServer — tool dispatch, mode enforcement, resources).
+- Zero external dependencies (MCP SDK not needed for in-process path).
+- Parity test: all 21 query tools produce identical results to V1 ToolRegistry.
+- Mode enforcement validated: mutation refused in observe, allowed in operate.
+
+### Phase 2 — Agent Migration
+- `react_agent.py`: constructor takes `GraphiteMcpServer` instead of `ToolRegistry`.
+  `_execute_tool` calls `mcp.call_tool()`. Agent-side query whitelist removed.
+  `ModeViolation` exceptions surfaced as structured error observations.
+- `prompts/system_prompt.py`: mode-aware prompt (OBSERVE vs OPERATE guidance blocks).
+  Removed import of `ToolSchema`. Accepts duck-typed tool list.
+- `prompts/templates.py`: `format_tool_catalog` supports both `ToolDef` and `ToolSchema`
+  via duck typing (`input_schema` or `parameters`).
+- `agent/llm/base.py`: `LLMProvider.complete()` tools param changed from
+  `list[ToolSchema]` to `list` (generic). Decoupled from V1 tools package.
+
+### Phase 3 — App Wiring + Mode API
+- `api/state.py`: `Services.registry` → `Services.mcp_server`. `build_services`
+  creates `GraphiteMcpServer`. `make_agent` passes MCP server.
+- `api/routes/agent.py`: added `GET/POST /agent/mode` (observe/operate toggle).
+- `api/routes/simulation.py`: mutation name lookup uses MCP server tool list.
+- LLM providers (`mock_provider.py`, `gemini_provider.py`): removed `ToolSchema` imports.
+
+### Phase 4 — Remove ToolRegistry
+- Deleted `graphite/tools/` directory (base.py, registry.py, __init__.py).
+- Confirmed zero remaining references (`grep` clean).
+- `tests/conftest.py`: `registry` fixture → `mcp_server` fixture.
+- `tests/test_tools.py`: fully rewritten for MCP server (tool counts, mode enforcement,
+  resources, domain errors). 18 new tests.
+- `tests/test_agent.py`: all `registry` → `mcp_server`. Mutation refusal test expects
+  `ModeViolation` (not `ToolNotAvailable`).
+
+### Phase 5 — External Agent Support (stdio)
+- Created `graphite/mcp/__main__.py`: boots twin + engines + MCP server, wires to
+  MCP SDK stdio transport. Clear error message if `mcp` package not installed.
+- Created `mcp.json` at repo root for Claude Desktop / IDE configuration.
+- The `mcp` SDK is not installed in the current environment (corporate proxy), so
+  stdio transport is untested live. The in-process path (Phases 1-4) is fully validated.
+
+### Validation
+- **103 tests passed** (up from 94 in V1; +9 new MCP tests, -0 regressions).
+- V1 ToolRegistry fully removed. Zero zombie architecture.
+- Agent loop works end-to-end via MCP server with mock LLM.
+- Mode enforcement (observe/operate) validated at MCP server level.
+- All FastAPI endpoints work (health, topology, analysis, simulation, agent, mode).

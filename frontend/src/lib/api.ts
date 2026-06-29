@@ -64,4 +64,14 @@ export const api = {
     ),
 
   diff: () => request<Record<string, unknown>>("/simulation/diff"),
+
+  // V2 capability mode
+  getMode: () =>
+    request<{ mode: string; mutation_tools_enabled: boolean }>("/agent/mode"),
+
+  setMode: (mode: string) =>
+    request<{ previous_mode: string; current_mode: string; mutation_tools_enabled: boolean }>(
+      "/agent/mode",
+      { method: "POST", body: JSON.stringify({ mode }) },
+    ),
 };

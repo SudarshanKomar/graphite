@@ -1,6 +1,6 @@
 "use client";
 
-import { Hexagon, RotateCcw, Wifi, WifiOff, Sparkles } from "lucide-react";
+import { Hexagon, RotateCcw, Wifi, WifiOff, Sparkles, Eye, Wrench } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -10,21 +10,30 @@ export function Header() {
   const llm = useStore((s) => s.llmConfigured);
   const reset = useStore((s) => s.resetSim);
   const busy = useStore((s) => s.busy);
+  const mode = useStore((s) => s.capabilityMode);
+  const setMode = useStore((s) => s.setMode);
 
   const sites = global?.sites ?? [];
   const totalUsers = sites.reduce((a, s) => a + s.total_users, 0);
   const impacted = sites.filter((s) => s.health !== "healthy").length;
   const devicesDown = sites.reduce((a, s) => a + s.devices_down, 0);
 
+  const isOperate = mode === "operate";
+
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-line bg-surface/80 px-4 backdrop-blur-sm">
+    <header
+      className={cn(
+        "flex h-14 shrink-0 items-center justify-between border-b bg-surface/80 px-4 backdrop-blur-sm",
+        isOperate ? "border-high/40" : "border-line",
+      )}
+    >
       {/* Brand */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2.5 shrink-0">
         <div className="relative flex h-8 w-8 items-center justify-center">
           <Hexagon className="h-8 w-8 text-signal" strokeWidth={1.4} />
           <span className="absolute h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_10px_rgba(51,230,176,0.9)]" />
         </div>
-        <div className="leading-tight">
+        <div className="leading-tight hidden sm:block">
           <div className="font-mono text-[15px] font-semibold tracking-[0.18em] text-ink">
             GRAPHITE
           </div>
@@ -34,8 +43,8 @@ export function Header() {
         </div>
       </div>
 
-      {/* Global status */}
-      <div className="hidden items-center gap-5 md:flex">
+      {/* Global status — wraps on narrow screens */}
+      <div className="hidden items-center gap-3 lg:flex xl:gap-5">
         <Stat label="sites" value={String(sites.length)} />
         <Divider />
         <Stat label="users" value={totalUsers.toLocaleString()} />
@@ -54,21 +63,39 @@ export function Header() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 shrink-0">
+        {/* V2: Observe / Operate mode toggle */}
+        <button
+          onClick={() => setMode(isOperate ? "observe" : "operate")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono font-semibold transition",
+            isOperate
+              ? "border-high/50 bg-high/10 text-high hover:bg-high/20"
+              : "border-signal/30 bg-signal/10 text-signal hover:bg-signal/20",
+          )}
+          title={isOperate
+            ? "OPERATE mode — agent can mutate topology. Click to switch to observe."
+            : "OBSERVE mode — agent is read-only. Click to switch to operate."
+          }
+        >
+          {isOperate ? <Wrench className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+          {isOperate ? "Operate" : "Observe"}
+        </button>
+
         <span
           className={cn(
-            "flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono",
+            "hidden sm:flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono",
             llm
               ? "border-signal/30 bg-signal/10 text-signal"
               : "border-line bg-elevated text-faint",
           )}
           title={llm ? "Gemini agent online" : "LLM not configured (set GEMINI_API_KEY)"}
         >
-          <Sparkles className="h-3 w-3" /> {llm ? "AI online" : "AI offline"}
+          <Sparkles className="h-3 w-3" /> {llm ? "AI" : "offline"}
         </span>
         <span
           className={cn(
-            "flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono",
+            "hidden md:flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-mono",
             connected
               ? "border-healthy/30 bg-healthy/10 text-healthy"
               : "border-critical/30 bg-critical/10 text-critical",
