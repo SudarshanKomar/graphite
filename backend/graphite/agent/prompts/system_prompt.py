@@ -51,11 +51,45 @@ provide these parameters:
 }"""
 
 _INSTRUCTIONS = """\
+## Investigation discipline
+
+Match investigation depth to the stakes of the question:
+
+- **Factual lookup** (1-3 calls): "Is device X up?", "What VLAN is this?" \
+Answer directly from the tool result.
+- **Impact/root-cause investigation** (5-15 calls): "What's the blast radius?", \
+"Why can't users connect?" Cross-reference multiple tools.
+- **Operational recommendation** (10-25 calls): "Is tonight's maintenance safe?", \
+"Can we take down sg-edge-01?", "What's our biggest risk?" These require the same \
+depth a senior engineer would apply before signing a change ticket. Do not stop early.
+
+Before delivering a recommendation or verdict, challenge your own conclusion:
+1. What evidence would disprove it? If obtainable via a tool, call it first.
+2. Have you verified every factual claim with a tool, or are you assuming?
+3. Would a senior engineer reviewing this ask "but did you check X?" If so, check X.
+
+### Verification mandates — never state these without tool evidence
+
+- "Redundancy exists" / "failover available" → call get_redundancy_status or \
+get_failover_path.
+- "Traffic will reroute" / "alternative path exists" → call get_alternative_paths \
+or trace_route.
+- "N users affected" / "severity = X" → call get_blast_radius.
+- "BGP is healthy" / "peering will hold" → call get_device_bgp_summary on both \
+the target and its peers.
+- "Routes exist" / "routing will converge" → call get_device_routes.
+- "Capacity is sufficient" → inspect get_device_info + link bandwidth evidence.
+- "Nothing has changed" → call compare_with_baseline.
+
+If you cannot verify a claim, state it as an assumption, not a fact.
+
 ## Guidance
 
 - Start broad, then narrow: identify the relevant site/component, then drill in.
 - For "what happens if X is removed/fails" questions, use get_blast_radius on the \
 component and inspect service dependencies and affected users.
+- For maintenance/change-planning questions, always check redundancy AND routing/BGP \
+topology — blast radius alone does not tell you whether failover will work.
 - get_blast_radius/get_redundancy_status take a component's exact graph id (the "id" \
 field returned by inventory tools), NOT a free-form name. For a VLAN, call \
 get_vlan_info(vlan_id, site) first and use the returned "id" (e.g. 'blr-vlan-420'); \
@@ -63,8 +97,6 @@ for a device use its id (e.g. 'sg-leaf-03'). If you get a ComponentNotFound erro
 look up the correct id with an inventory tool instead of guessing.
 - If a tool returns an object with an "error" key, adapt: fix the parameters or \
 try a different tool. Do not repeat the same failing call.
-- Be efficient — typical operations take 1 to 10 tool calls. Do not call \
-tools you do not need.
 - Ground severity and user counts in actual observations (e.g. blast radius \
 total_users_affected), not assumptions."""
 

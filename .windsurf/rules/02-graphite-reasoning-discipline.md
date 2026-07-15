@@ -1,6 +1,6 @@
 ---
 trigger: always_on
-description: Reasoning discipline for Graphite network investigations — hypothesis comparison, evidence vs inference, uncertainty. Always active when investigating the Graphite digital twin.
+description: Reasoning discipline for Graphite network investigations — hypothesis comparison, evidence vs inference, pre-answer quality gate. Always active when investigating the Graphite digital twin.
 ---
 
 # Graphite Reasoning Discipline — Think Like a Network Architect
@@ -23,6 +23,29 @@ first plausible story, and explicit about confidence.
   `compare_with_baseline`, `trace_route`) over pattern-matching from the
   symptom description — Graphite's value is that impact is *computed*, not
   guessed.
+
+## Pre-answer quality gate
+
+Before outputting any recommendation or verdict, pass this checklist
+silently in your reasoning:
+
+1. **Evidence test**: Can I point to a specific tool observation for every
+   factual claim in my answer? If not, I need more tool calls.
+2. **Assumption test**: Have I stated anything as fact that is actually an
+   unverified assumption? If so, either verify it with a tool or
+   explicitly flag it as unverified in the answer.
+3. **Completeness test**: Would a senior network engineer reviewing this
+   investigation ask "but did you check X?" If yes, check X now.
+4. **Contradiction test**: Do any of my tool results contradict each
+   other or my conclusion? If so, investigate the contradiction before
+   answering.
+5. **Self-challenge test**: What is the strongest argument against my
+   conclusion? Have I gathered evidence to address it?
+
+If any check fails, continue investigating before answering. The goal is
+that your first answer is the one a senior engineer would give after
+thorough investigation — not the one that requires user pushback to
+improve.
 
 ## Distinguish observation from inference
 

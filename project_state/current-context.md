@@ -155,6 +155,33 @@ V1 is complete, tagged, and frozen. All 3 runs delivered. Architecture preserved
 
 ---
 
+## Reasoning Architecture Redesign
+
+Addressed a systemic issue where the agent reached conclusions too early
+(1-3 tool calls for questions that need 10-25), then produced significantly
+better answers when challenged by the user. Changes:
+
+- **New rule `03-graphite-investigation-standards.md`** (keystone): depth
+  classification, verification mandates (specific claims require specific
+  tools), assumption audit, self-challenge protocol, common investigation
+  failure patterns.
+- **Rewritten rule `02`**: added pre-answer quality gate (5-point checklist).
+- **Rewritten system prompt** (`system_prompt.py`): removed "be efficient —
+  1 to 10 tool calls" which discouraged thorough investigation; added
+  investigation discipline section with depth classification and
+  verification mandates.
+- **`agent_max_iterations` 10 → 25**: old value was tuned to the symptom
+  (shallow 1-3 call investigations), not the desired behavior.
+- **All 5 domain skills rewritten**: each now has mandatory evidence gates
+  (tools that MUST be called), common trap warnings, and self-challenge
+  requirements. Key additions: BGP topology verification for maintenance,
+  cross-site reachability matrix, blast-radius + redundancy pairing.
+- **Docs updated**: `specs/v2/architecture/skill-system.md`.
+
+Test results: 109 passed, 0 failures (no regressions).
+
+---
+
 ## Key Conventions To Preserve
 
 - `GraphWrapper` is the ONLY module that imports `networkx`.

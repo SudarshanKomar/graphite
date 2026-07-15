@@ -51,9 +51,10 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
 
     # --- Agent -------------------------------------------------------------
-    # Live investigations observed to complete in 1-3 tool calls; 10 leaves ample
-    # headroom while bounding API usage (tuned down from 15 after real testing).
-    agent_max_iterations: int = 10
+    # Thorough operational recommendations (maintenance safety, change risk)
+    # require 10-25 tool calls. Simple lookups complete in 1-3. The budget
+    # must accommodate the deep-investigation case without truncation.
+    agent_max_iterations: int = 25
 
     @property
     def data_path(self) -> Path:

@@ -55,7 +55,8 @@ single MCP tool.
 ├── rules/
 │   ├── 00-graphite-persona-and-grounding.md      (always_on)
 │   ├── 01-graphite-response-style.md             (always_on)
-│   └── 02-graphite-reasoning-discipline.md        (always_on)
+│   ├── 02-graphite-reasoning-discipline.md        (always_on)
+│   └── 03-graphite-investigation-standards.md     (always_on)
 └── skills/
     ├── failure-impact-analysis/SKILL.md
     ├── redundancy-spof-recovery/SKILL.md
@@ -125,20 +126,52 @@ conclusion under three headings).
 **Why it exists**: keeps the *investigation* rigorous even though the
 *output* (per the style skill) is short. Requires considering competing
 hypotheses before committing, distinguishing observation from inference,
-and calibrating confidence to evidence quality — modeled on how a senior
-architect reasons under an escalation, not how a textbook explains
-networking.
+and calibrating confidence to evidence quality. Includes a **pre-answer
+quality gate** — a 5-point checklist (evidence test, assumption test,
+completeness test, contradiction test, self-challenge test) that the
+agent runs silently before delivering any recommendation. The gate's
+purpose: the agent's first answer should match the quality it produces
+when challenged, without requiring a user nudge.
 
-These three compose: reasoning discipline governs the investigation,
-response style governs what's surfaced, persona/grounding governs what
-counts as a valid fact in either.
+### `03-graphite-investigation-standards.md`
+
+**Why it exists**: the **keystone** rule that directly addresses the
+premature-conclusion failure mode. While `02` establishes reasoning
+philosophy (how to think), `03` establishes investigation process (what
+steps to take). Introduces:
+- **Depth classification**: questions are classified as quick lookup
+  (1-3 tools), operational investigation (5-15 tools), or operational
+  recommendation (10-25+ tools). The agent matches depth to stakes.
+- **Verification mandates**: specific factual claims ("redundancy
+  exists," "traffic will reroute," "BGP is healthy") require specific
+  tool evidence — never assertion.
+- **Assumption audit**: before every operational recommendation, the
+  agent identifies its unverified assumptions and verifies the verifiable
+  ones.
+- **Self-challenge protocol**: before delivering a verdict, the agent
+  identifies what evidence would disprove it and checks.
+- **Common investigation failures**: an explicit list of anti-patterns
+  (blast radius without redundancy check, ECMP as proof of failover,
+  single-site reachability check, skipping BGP topology).
+
+These four compose: reasoning discipline governs how to think,
+investigation standards govern what evidence to collect, response style
+governs what's surfaced, persona/grounding governs what counts as a valid
+fact in any of them.
 
 ---
 
 ## Domain skills
 
-Each entry: **trigger shape → why this workflow, not a guess → tools
-preferred, in order → what "done" looks like.**
+Each entry: **trigger shape → why this workflow → mandatory evidence
+(tools that MUST be called) → expected workflow → common traps →
+output structure.**
+
+Every domain skill now includes a **"mandatory evidence"** section listing
+the tools that MUST be called before delivering an answer for that
+question type. This is the structural enforcement of the investigation
+standards rule (`03`): skills define the minimum evidence, not just
+"preferred" tools.
 
 ### `failure-impact-analysis/SKILL.md`
 
@@ -146,17 +179,15 @@ preferred, in order → what "done" looks like.**
   what's the impact" (post-fault investigation of an already-injected
   problem).
 - **Why**: `get_blast_radius` is Graphite's signature deterministic
-  capability. This skill exists purely to make it the mandatory first
-  move instead of narrative guessing, and to require resolving the exact
-  component ID first (VLAN → `get_vlan_info` → its `id` field; link →
-  `get_links`) since blast radius rejects free-form names.
-- **Preferred tools**: `get_vlan_info`/`get_links` (ID resolution) →
-  `get_blast_radius` → `get_service_dependencies` / `check_reachability`
-  (mechanism) → `compare_with_baseline` (cross-check if a fault may
-  already be live).
+  capability. This skill exists to make it the mandatory first move, and
+  to require pairing it with redundancy and service-dependency checks for
+  a complete picture.
+- **Mandatory evidence**: `get_blast_radius` (impact) +
+  `get_redundancy_status` (is failover available?) +
+  `get_service_dependencies` (why are downstream services affected?).
 - **Done**: severity + cause stated first, affected devices/services/user
-  count taken verbatim from the blast-radius observation, brief mechanism
-  explanation, and what's *not* affected when that's material.
+  count taken verbatim from the blast-radius observation, redundancy
+  mitigation noted, brief mechanism explanation.
 
 ### `redundancy-spof-recovery/SKILL.md`
 
@@ -164,19 +195,13 @@ preferred, in order → what "done" looks like.**
   site Y", "is there a failover path", "what's our DR posture for Z".
 - **Why**: resilience claims are the second most common place a generic
   assistant substitutes "typical leaf-spine design" assumptions for
-  actual computed redundancy. Also folds disaster-recovery-style
-  questions in here rather than a separate skill, since Graphite's only
-  DR-relevant tool (`get_failover_path`) is a redundancy tool, not a
-  distinct capability — a separate "DR skill" would just re-describe the
-  same three tools under a different name.
-- **Preferred tools**: `get_redundancy_status` (component-level) →
-  `get_single_points_of_failure` (site-wide sweep) → `get_failover_path`
-  (post-failure behavior/cost) → `get_service_dependencies` (tie the gap
-  to actual exposure) → `get_inter_site_connectivity` for whole-site DR
-  questions.
+  actual computed redundancy.
+- **Mandatory evidence**: `get_redundancy_status` (component-level) +
+  `get_failover_path` (backup path cost) + end-to-end verification via
+  `check_reachability` or `trace_route` through the backup path +
+  `get_device_bgp_summary` for edge/WAN components (peering topology).
 - **Done**: a plain verdict (redundant / at-risk / SPOF) before the
-  supporting evidence; remediation only if asked, and only grounded in
-  what the tools showed is actually missing.
+  supporting evidence, with BGP peering structure cited when relevant.
 
 ### `service-dependency-root-cause/SKILL.md`
 
@@ -185,62 +210,48 @@ preferred, in order → what "done" looks like.**
   cause.
 - **Why**: this is the classic root-cause escalation shape and the one
   most prone to premature conclusions. The skill enforces forming
-  multiple hypotheses (path/latency vs. dependency vs. host) *before*
-  further tool calls, and explicitly warns that "can't connect at all"
-  and "connects but slow" are different failure classes (VLAN/reachability
-  vs. latency) that must not be conflated.
-- **Preferred tools**: `get_site_summary` / `compare_with_baseline`
-  (scope + known deltas first) → `get_service_dependencies` →
-  `trace_route` / `check_reachability` → `get_device_info` / `get_link_info`
-  on the suspect component → `get_blast_radius` on the confirmed root
-  cause for the final affected-scope numbers.
+  multiple hypotheses *before* further tool calls, and checking baseline
+  diff first (fastest path to root cause when a mutation exists).
+- **Mandatory evidence**: `compare_with_baseline` (known deltas first) +
+  `get_service_dependencies` (dependency chain) +
+  `check_reachability` / `trace_route` (path verification) +
+  `get_blast_radius` on the confirmed root cause (authoritative scope).
 - **Done**: root cause stated first, a short causal chain (each link
   tied to an observation), affected scope from blast radius (not
-  re-derived), ruled-out alternatives only if genuinely informative.
+  re-derived).
 
 ### `maintenance-change-planning/SKILL.md`
 
 - **Trigger shape**: forward-looking, not-yet-happened — "if we take X
   down for maintenance", "what's the impact of removing VLAN 420 for a
   migration", "validate this change before we make it".
-- **Why**: this is where the twin's mutate/reset capability (not just its
-  query tools) delivers unique value — a proposed change can actually be
-  *run* in a disposable working copy and the real cascaded impact
-  observed, not just estimated from a static blast-radius call. The skill
-  exists to make the full loop (predict cheaply first → decide if
-  simulation is warranted → operate mode explicitly → mutate → verify →
-  reset) the default pattern, since without it an agent either mutates
-  without predicting first, or forgets to reset the twin afterward.
-- **Preferred tools**: `get_blast_radius` + `get_redundancy_status`
-  (cheap prediction) → `set_capability_mode(mode="operate")` (stated
-  explicitly) → the matching mutation tool → `get_blast_radius` /
-  `compare_with_baseline` / `get_service_dependencies` (verify) →
-  `reset_simulation` (restore, confirmed).
-- **Done**: verdict first (safe / risky / blocked), predicted vs.
-  confirmed impact clearly labeled as such, and an explicit statement of
-  whether the twin was reset or intentionally left mutated.
+- **Why**: this is where the twin's mutate/reset capability delivers
+  unique value. This skill exists to make the full predict → challenge →
+  simulate → verify → reset loop the default pattern.
+- **Mandatory evidence** (all required before a verdict):
+  `get_blast_radius` (impact) + `get_redundancy_status` (failover) +
+  `get_device_bgp_summary` on target and peers (peering topology) +
+  `check_reachability` from every remote site (cross-site impact) +
+  `get_service_dependencies` (service impact) + `get_device_routes` on
+  backup device (routing verification).
+- **Done**: verdict (safe / conditionally safe / risky / blocked),
+  predicted vs. confirmed impact, conditions for conditional safety,
+  and whether the twin was reset.
 
 ### `network-health-architecture-review/SKILL.md`
 
 - **Trigger shape**: broad, not-yet-scoped-to-one-fault — "how healthy is
   the network", "review Bangalore's architecture", "how well-connected
   are our sites".
-- **Why**: open-ended questions with no named component are exactly where
-  a generic assistant drifts into vague commentary. The skill gives a
-  repeatable checklist (health pass → structural pass → proactive SPOF
-  check → prioritized findings) so breadth-first reviews are consistent
-  rather than ad hoc, and explicitly scopes what device-level telemetry
-  (`cpu_percent`, interface error/drop counters) can and cannot support —
-  point-in-time signal only, not a capacity trend, since Graphite has no
-  historical/utilization-threshold tool.
-- **Preferred tools**: `get_site_summary` (per site) →
-  `compare_with_baseline` (network-wide) → `get_site_topology` (structural
-  depth, if asked) → `get_single_points_of_failure` (proactive, even if
-  not asked) → `get_inter_site_connectivity` → `search_devices` for
-  inventory characterization.
+- **Why**: open-ended questions are exactly where a generic assistant
+  drifts into vague commentary. This skill gives a repeatable checklist
+  with mandatory SPOF checking so reviews are consistent.
+- **Mandatory evidence**: `get_site_summary` (per site) +
+  `compare_with_baseline` (active faults) +
+  `get_single_points_of_failure` per site (mandatory even if not asked) +
+  `get_inter_site_connectivity` for key site pairs (WAN/BGP health).
 - **Done**: headline verdict per site/overall, findings prioritized
-  (active faults > SPOFs > structural notes), and an explicit scope note
-  if coverage was partial.
+  (active faults > SPOFs > structural notes).
 
 ---
 
