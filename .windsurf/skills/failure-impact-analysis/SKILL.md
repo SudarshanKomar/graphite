@@ -21,16 +21,24 @@ general networking intuition. The single most valuable thing this skill
 does is stop the model from guessing impact and force it through
 `get_blast_radius`.
 
-## Mandatory evidence — do NOT assess impact without these
+## Evidence strategy
+
+### Core evidence (always)
 
 1. **Blast radius**: `get_blast_radius(component_id)` — the deterministic
-   source of truth. Always call this.
-2. **Service dependencies**: `get_service_dependencies` for every service
-   listed in the blast radius — to explain *why* downstream services are
-   affected and whether dependencies are direct or transitive.
-3. **Redundancy context**: `get_redundancy_status(component_id)` — does
-   failover exist that could mitigate the impact? Blast radius shows
-   worst-case; redundancy shows whether that worst case is the actual case.
+   source of truth for affected devices, services, users, severity.
+2. **Redundancy context**: `get_redundancy_status(component_id)` — does
+   failover mitigate the impact? Always pair with blast radius.
+
+### Conditional deepening
+
+- **If blast radius shows services affected**: `get_service_dependencies`
+  for the key affected services — to explain the dependency chain (direct
+  vs transitive). Not needed if no services are in the blast radius.
+- **If user asks "can X still reach Y"**: `check_reachability` to verify
+  — don't infer from topology.
+- **If a fault may already be injected**: `compare_with_baseline` to
+  confirm what actually changed.
 
 ## Expected workflow
 
@@ -45,33 +53,21 @@ does is stop the model from guessing impact and force it through
 2. **Compute impact**: `get_blast_radius(component_id)` — lead the answer
    with severity, affected devices/services/users from this result.
 3. **Check redundancy**: `get_redundancy_status(component_id)` — is the
-   impact mitigated by failover? Blast radius shows what breaks IF the
-   component is fully down with no failover. Redundancy status tells you
-   whether that is the realistic outcome or whether traffic reroutes.
-4. **Explain mechanism, don't just report the number.** Pull in supporting
-   context so the "why" is grounded, not asserted:
-   - `get_service_dependencies` for services in the blast radius, to show
-     *why* a downstream service is affected (direct vs transitive).
-   - `get_device_info` / `get_device_interfaces` for what the component
-     connects to.
-   - `check_reachability` between an affected user group and a key service
-     when the user's question is framed as "can users still reach X".
-5. **Note what's NOT affected** when it materially changes the picture
-   (e.g. "wired users on a different VLAN are unaffected") — this is often
-   what separates a good investigation from a shallow one.
-6. If investigating a fault that may already be injected, cross-check with
-   `compare_with_baseline` to confirm what actually changed versus what the
-   user believes changed.
+   impact mitigated by failover?
+4. **Deepen if warranted** based on what blast radius and redundancy
+   showed:
+   - Services affected → `get_service_dependencies` for key services.
+   - Reachability question → `check_reachability`.
+   - Stop once the mechanism is understood and numbers are grounded.
+5. **Note what's NOT affected** when it materially changes the picture.
 
-## Common traps to avoid
+## Critical gaps
 
-- **Blast radius without redundancy.** Blast radius is worst-case. If
-  redundancy exists, the actual impact may be lower. Always pair them.
-- **Reporting service impact without understanding the dependency chain.**
-  "3 services affected" is less useful than "db-cluster is down → auth
-  depends on it → ERP depends on auth." Use `get_service_dependencies`.
-- **Skipping reachability when users ask "can X still reach Y."** Don't
-  infer reachability from topology — verify it with `check_reachability`.
+- **Blast radius without redundancy.** Always pair — blast radius is
+  worst-case, redundancy tells you if failover prevents it.
+- **Reporting service impact without the dependency chain.** "3 services
+  affected" is less useful than the causal chain. But only expand when
+  services are actually in the blast radius.
 
 ## Output structure
 

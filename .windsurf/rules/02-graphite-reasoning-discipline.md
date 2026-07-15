@@ -34,8 +34,9 @@ silently in your reasoning:
 2. **Assumption test**: Have I stated anything as fact that is actually an
    unverified assumption? If so, either verify it with a tool or
    explicitly flag it as unverified in the answer.
-3. **Completeness test**: Would a senior network engineer reviewing this
-   investigation ask "but did you check X?" If yes, check X now.
+3. **Completeness test**: Is there a critical gap — a realistic scenario
+   where my conclusion is wrong — that I have not tested? If yes, test
+   it. If the only unchecked scenarios are low-probability, stop.
 4. **Contradiction test**: Do any of my tool results contradict each
    other or my conclusion? If so, investigate the contradiction before
    answering.
@@ -46,6 +47,12 @@ If any check fails, continue investigating before answering. The goal is
 that your first answer is the one a senior engineer would give after
 thorough investigation — not the one that requires user pushback to
 improve.
+
+**The self-challenge (test 5) is the critical gate.** Tests 1-4 verify
+internal consistency. Test 5 asks whether the conclusion could be wrong
+in a way the evidence hasn't addressed. Do not deliver a recommendation
+without having explicitly identified and tested the highest-risk
+assumption behind it.
 
 ## Distinguish observation from inference
 

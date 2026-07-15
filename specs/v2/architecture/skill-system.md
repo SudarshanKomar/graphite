@@ -135,123 +135,103 @@ when challenged, without requiring a user nudge.
 
 ### `03-graphite-investigation-standards.md`
 
-**Why it exists**: the **keystone** rule that directly addresses the
-premature-conclusion failure mode. While `02` establishes reasoning
-philosophy (how to think), `03` establishes investigation process (what
-steps to take). Introduces:
-- **Depth classification**: questions are classified as quick lookup
-  (1-3 tools), operational investigation (5-15 tools), or operational
-  recommendation (10-25+ tools). The agent matches depth to stakes.
-- **Verification mandates**: specific factual claims ("redundancy
-  exists," "traffic will reroute," "BGP is healthy") require specific
-  tool evidence — never assertion.
-- **Assumption audit**: before every operational recommendation, the
-  agent identifies its unverified assumptions and verifies the verifiable
-  ones.
-- **Self-challenge protocol**: before delivering a verdict, the agent
-  identifies what evidence would disprove it and checks.
-- **Common investigation failures**: an explicit list of anti-patterns
-  (blast radius without redundancy check, ECMP as proof of failover,
-  single-site reachability check, skipping BGP topology).
+**Why it exists**: the **keystone** rule that governs investigation
+efficiency. While `02` establishes reasoning philosophy (how to think),
+`03` establishes investigation process (when to gather more evidence and
+when to stop). Introduces:
+- **Information-gain principle**: before every tool call, ask "will this
+  reduce an uncertainty that could change my recommendation?" If not,
+  skip it.
+- **Stopping heuristic**: stop when the next tool call is unlikely to
+  change the recommendation. Depth emerges from actual complexity, not
+  target call counts.
+- **Verification mandates**: specific factual claims require specific
+  tool evidence — but with an "already established" exception to prevent
+  redundant calls.
+- **Confirmation-loop anti-pattern**: do not call the same tool on
+  multiple devices to re-confirm a fact already established.
+- **Focused assumption audit and self-challenge**: verify remaining
+  uncertainties only if they could realistically change the
+  recommendation; challenge with one targeted check, not exhaustive
+  exploration.
 
 These four compose: reasoning discipline governs how to think,
-investigation standards govern what evidence to collect, response style
-governs what's surfaced, persona/grounding governs what counts as a valid
-fact in any of them.
+investigation standards govern what evidence to collect and when to stop,
+response style governs what's surfaced, persona/grounding governs what
+counts as a valid fact in any of them.
 
 ---
 
 ## Domain skills
 
-Each entry: **trigger shape → why this workflow → mandatory evidence
-(tools that MUST be called) → expected workflow → common traps →
-output structure.**
+Each entry: **trigger shape → why this workflow → core evidence (always
+gathered) → conditional deepening (only if core raises concerns) →
+stopping condition → output structure.**
 
-Every domain skill now includes a **"mandatory evidence"** section listing
-the tools that MUST be called before delivering an answer for that
-question type. This is the structural enforcement of the investigation
-standards rule (`03`): skills define the minimum evidence, not just
-"preferred" tools.
+Every domain skill uses a **"core + conditional deepening"** evidence
+strategy. Core evidence is the small set of tools that always runs (2-3
+tools). Conditional deepening lists additional tools that run only when
+core evidence raises a specific concern. This prevents checklist-driven
+over-investigation while preserving the verification mandates from
+rule `03`.
 
 ### `failure-impact-analysis/SKILL.md`
 
 - **Trigger shape**: "what happens if X fails/is removed", or "X is down,
-  what's the impact" (post-fault investigation of an already-injected
-  problem).
-- **Why**: `get_blast_radius` is Graphite's signature deterministic
-  capability. This skill exists to make it the mandatory first move, and
-  to require pairing it with redundancy and service-dependency checks for
-  a complete picture.
-- **Mandatory evidence**: `get_blast_radius` (impact) +
-  `get_redundancy_status` (is failover available?) +
-  `get_service_dependencies` (why are downstream services affected?).
-- **Done**: severity + cause stated first, affected devices/services/user
-  count taken verbatim from the blast-radius observation, redundancy
-  mitigation noted, brief mechanism explanation.
+  what's the impact".
+- **Core evidence**: `get_blast_radius` + `get_redundancy_status`.
+- **Conditional**: service dependencies (only if blast radius shows
+  services affected), reachability (only if user asks "can X reach Y"),
+  baseline comparison (only if fault may already be injected).
+- **Done**: severity + affected scope + redundancy mitigation.
 
 ### `redundancy-spof-recovery/SKILL.md`
 
-- **Trigger shape**: "is X redundant", "single points of failure in
-  site Y", "is there a failover path", "what's our DR posture for Z".
-- **Why**: resilience claims are the second most common place a generic
-  assistant substitutes "typical leaf-spine design" assumptions for
-  actual computed redundancy.
-- **Mandatory evidence**: `get_redundancy_status` (component-level) +
-  `get_failover_path` (backup path cost) + end-to-end verification via
-  `check_reachability` or `trace_route` through the backup path +
-  `get_device_bgp_summary` for edge/WAN components (peering topology).
-- **Done**: a plain verdict (redundant / at-risk / SPOF) before the
-  supporting evidence, with BGP peering structure cited when relevant.
+- **Trigger shape**: "is X redundant", "SPOFs in site Y", "failover
+  path", "DR posture for Z".
+- **Core evidence**: `get_redundancy_status` (component) or
+  `get_single_points_of_failure` (site-wide).
+- **Conditional**: end-to-end verification (if claiming failover works),
+  `get_device_bgp_summary` (if edge/WAN component), `get_failover_path`
+  (if user cares about latency cost), service dependencies (if SPOF found
+  and exposure matters).
+- **Done**: plain verdict before evidence.
 
 ### `service-dependency-root-cause/SKILL.md`
 
-- **Trigger shape**: symptom-first reports — "ERP is down", "users can't
-  connect", "X seems slow" — where the user gives an effect and wants the
-  cause.
-- **Why**: this is the classic root-cause escalation shape and the one
-  most prone to premature conclusions. The skill enforces forming
-  multiple hypotheses *before* further tool calls, and checking baseline
-  diff first (fastest path to root cause when a mutation exists).
-- **Mandatory evidence**: `compare_with_baseline` (known deltas first) +
-  `get_service_dependencies` (dependency chain) +
-  `check_reachability` / `trace_route` (path verification) +
-  `get_blast_radius` on the confirmed root cause (authoritative scope).
-- **Done**: root cause stated first, a short causal chain (each link
-  tied to an observation), affected scope from blast radius (not
-  re-derived).
+- **Trigger shape**: symptom-first — "ERP is down", "users can't
+  connect", "X seems slow".
+- **Core evidence**: `compare_with_baseline` (first, always) +
+  `get_service_dependencies` (dependency chain).
+- **Conditional**: reachability (connectivity symptom), trace_route
+  (latency symptom), blast radius (after root cause confirmed, for
+  scope). If baseline diff explains the symptom, shortcut the full
+  hypothesis cycle.
+- **Done**: root cause + causal chain + blast-radius scope.
 
 ### `maintenance-change-planning/SKILL.md`
 
-- **Trigger shape**: forward-looking, not-yet-happened — "if we take X
-  down for maintenance", "what's the impact of removing VLAN 420 for a
-  migration", "validate this change before we make it".
-- **Why**: this is where the twin's mutate/reset capability delivers
-  unique value. This skill exists to make the full predict → challenge →
-  simulate → verify → reset loop the default pattern.
-- **Mandatory evidence** (all required before a verdict):
-  `get_blast_radius` (impact) + `get_redundancy_status` (failover) +
-  `get_device_bgp_summary` on target and peers (peering topology) +
-  `check_reachability` from every remote site (cross-site impact) +
-  `get_service_dependencies` (service impact) + `get_device_routes` on
-  backup device (routing verification).
-- **Done**: verdict (safe / conditionally safe / risky / blocked),
-  predicted vs. confirmed impact, conditions for conditional safety,
-  and whether the twin was reset.
+- **Trigger shape**: forward-looking — "is maintenance safe", "what
+  breaks if we take X down".
+- **Core evidence**: `get_blast_radius` + `get_redundancy_status` +
+  `get_device_bgp_summary` on target (if BGP-speaking).
+- **Conditional**: cross-site reachability (only if BGP shows 1:1
+  peering or asymmetric risk), service dependencies (only if blast radius
+  shows services affected), routing tables (only if conclusion depends on
+  traffic rerouting), simulation (only if compound change or user
+  requests it).
+- **Done**: verdict + impact + conditions for conditional safety.
 
 ### `network-health-architecture-review/SKILL.md`
 
-- **Trigger shape**: broad, not-yet-scoped-to-one-fault — "how healthy is
-  the network", "review Bangalore's architecture", "how well-connected
-  are our sites".
-- **Why**: open-ended questions are exactly where a generic assistant
-  drifts into vague commentary. This skill gives a repeatable checklist
-  with mandatory SPOF checking so reviews are consistent.
-- **Mandatory evidence**: `get_site_summary` (per site) +
-  `compare_with_baseline` (active faults) +
-  `get_single_points_of_failure` per site (mandatory even if not asked) +
-  `get_inter_site_connectivity` for key site pairs (WAN/BGP health).
-- **Done**: headline verdict per site/overall, findings prioritized
-  (active faults > SPOFs > structural notes).
+- **Trigger shape**: broad — "how healthy is the network", "review
+  architecture", "how well-connected are sites".
+- **Core evidence**: `get_site_summary` per site in scope +
+  `compare_with_baseline`.
+- **Conditional**: SPOF sweep (if architecture/resilience is in scope),
+  inter-site connectivity (if WAN question), site topology (if structural
+  walkthrough), BGP summary (if inter-site design question).
+- **Done**: headline verdict + prioritized findings.
 
 ---
 

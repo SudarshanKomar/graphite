@@ -20,63 +20,61 @@ wiring. Graphite computes redundancy deterministically (parallel links,
 alternative paths, ECMP, BFS-based SPOF detection) — this skill exists to
 make that the *only* source for resilience claims.
 
-## Mandatory evidence — do NOT declare redundancy or SPOF status without these
+## Evidence strategy
+
+### Core evidence (always)
 
 1. **Redundancy status**: `get_redundancy_status(component_id)` — parallel
-   links, alternative paths, ECMP, risk assessment.
-2. **Failover path**: `get_failover_path(primary_component)` — does a
-   backup path actually exist? What's the latency cost?
-3. **End-to-end verification**: `check_reachability` or `trace_route`
-   through the backup path — point-level redundancy (parallel links on
-   one device) does not guarantee end-to-end connectivity via the backup.
-4. **BGP topology** (if edge/WAN component): `get_device_bgp_summary` —
-   is peering full-mesh or 1:1? A 1:1 peering topology means losing one
-   edge router eliminates a peer's only path.
+   links, alternative paths, ECMP, risk assessment. This is the
+   non-negotiable starting point.
+2. **Site-wide sweep** (if question is about a site, not a single
+   component): `get_single_points_of_failure(site)`.
 
-"Redundancy exists" without `get_redundancy_status` is an assumption, not
-a fact. "Failover works" without end-to-end verification is a guess.
+### Conditional deepening
+
+- **If redundancy shows ECMP or alternative paths, but you're claiming
+  "failover works"**: one `check_reachability` or `trace_route` through
+  the backup to confirm end-to-end. ECMP on one device ≠ end-to-end path.
+- **If component is edge/WAN and speaks BGP**: `get_device_bgp_summary`
+  to check peering topology (1:1 vs full-mesh). 1:1 peering means losing
+  one edge router eliminates a peer's only path — this is invisible to
+  `get_redundancy_status`.
+- **If you need failover latency cost**: `get_failover_path` — the backup
+  path's latency delta. Only needed if the user cares about performance
+  impact, not just availability.
+- **If a SPOF is found and the user cares about exposure**:
+  `get_service_dependencies` to connect "no redundant path" to the
+  services/users actually exposed.
+
+### Stopping condition
+
+If `get_redundancy_status` shows full redundancy (multiple paths, ECMP,
+low risk) and no BGP concern exists, the component is redundant — stop.
+Deepen only when the core result raises a concern worth resolving.
 
 ## Expected workflow
 
-1. **Component-level redundancy**: `get_redundancy_status(component_id)`
-   for the specific device or link in question — parallel link count,
-   alternative paths, ECMP status, risk assessment.
-2. **Failover behavior**: `get_failover_path(primary_component)` — the
-   backup path's latency, the delta versus primary, and whether failover
-   is automatic or manual.
-3. **End-to-end verification**: Even if `get_redundancy_status` reports
-   alternative paths exist, verify the backup path works end-to-end with
-   `check_reachability` or `trace_route`. ECMP or parallel links on one
-   device do not guarantee the entire backup path is functional.
-4. **BGP topology** (for edge/WAN devices): `get_device_bgp_summary` on
-   the component and its peers. The difference between 1:1 peering and
-   full-mesh peering fundamentally changes whether failover actually works
-   at the inter-site level.
-5. **Site-wide sweep**: `get_single_points_of_failure(site)` when the
-   question is about a site's overall resilience, not one component.
-6. **Cross-reference with dependencies**: if the component hosts or
-   carries a critical service, pair the redundancy finding with
-   `get_service_dependencies` so the answer connects "no redundant path"
-   to "which services/users are actually exposed by that gap."
-7. For "what if we lost site X entirely" style DR questions, combine
-   `get_inter_site_connectivity` (are there still WAN paths to the other
-   sites) with the affected site's SPOF and service list — there is no
-   single tool for whole-site DR, so state explicitly which pieces of the
-   answer are computed vs. reasoned from combining computed facts.
+1. **Component-level redundancy**: `get_redundancy_status(component_id)`.
+   Evaluate the result — does it show full redundancy or gaps?
+2. **Deepen based on results**:
+   - Redundancy looks solid → stop (or one backup-path verification if
+     claiming failover in the answer).
+   - ECMP only, no confirmed alternative device path → verify with one
+     `check_reachability` through the backup.
+   - Edge/WAN device → `get_device_bgp_summary` to check peering topology.
+   - SPOF or at-risk → `get_service_dependencies` to quantify exposure.
+3. For site-wide questions: `get_single_points_of_failure(site)`.
+4. For "what if we lost site X" DR questions: `get_inter_site_connectivity`
+   + the site's SPOF and service list.
 
-## Common traps to avoid
+## Critical gaps
 
-- **ECMP ≠ end-to-end failover.** A device advertising ECMP means it has
-  multiple next-hops. It does not mean the full backup path to the
-  destination works. Verify with `trace_route` or `check_reachability`.
-- **1:1 BGP peering is invisible to basic redundancy checks.** If
-  blr-edge-01 peers only with sg-edge-01 (no cross-peering to sg-edge-02),
-  losing sg-edge-01 isolates blr-edge-01 from Singapore even though
-  sg-edge-02 is healthy. Only `get_device_bgp_summary` reveals this.
-- **Reporting "redundant" based on parallel links alone.** Parallel links
-  protect against link failure, not device failure. If the question is
-  about device failure, check whether alternative paths exist through
-  different devices.
+- **ECMP ≠ end-to-end failover.** Verify backup path if conclusion
+  depends on failover.
+- **1:1 BGP peering.** Invisible to `get_redundancy_status`. If the
+  component is an edge router, check `get_device_bgp_summary`.
+- **Parallel links ≠ device redundancy.** Parallel links protect against
+  link failure, not device failure.
 
 ## Output structure
 

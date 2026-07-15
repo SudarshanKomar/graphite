@@ -157,26 +157,39 @@ V1 is complete, tagged, and frozen. All 3 runs delivered. Architecture preserved
 
 ## Reasoning Architecture Redesign
 
-Addressed a systemic issue where the agent reached conclusions too early
-(1-3 tool calls for questions that need 10-25), then produced significantly
-better answers when challenged by the user. Changes:
+Two iterations addressing opposite failure modes:
 
-- **New rule `03-graphite-investigation-standards.md`** (keystone): depth
-  classification, verification mandates (specific claims require specific
-  tools), assumption audit, self-challenge protocol, common investigation
-  failure patterns.
-- **Rewritten rule `02`**: added pre-answer quality gate (5-point checklist).
-- **Rewritten system prompt** (`system_prompt.py`): removed "be efficient —
-  1 to 10 tool calls" which discouraged thorough investigation; added
-  investigation discipline section with depth classification and
-  verification mandates.
-- **`agent_max_iterations` 10 → 25**: old value was tuned to the symptom
-  (shallow 1-3 call investigations), not the desired behavior.
-- **All 5 domain skills rewritten**: each now has mandatory evidence gates
-  (tools that MUST be called), common trap warnings, and self-challenge
-  requirements. Key additions: BGP topology verification for maintenance,
-  cross-site reachability matrix, blast-radius + redundancy pairing.
-- **Docs updated**: `specs/v2/architecture/skill-system.md`.
+**Iteration 1** — fixed premature conclusions (1-3 calls for questions
+needing 10+). Added investigation discipline, verification mandates,
+assumption audit, self-challenge. Quality improved dramatically but
+introduced over-collection (~25 calls for questions answerable in 6).
+
+**Iteration 2** — redesigned around **information gain**. Core +
+conditional deepening. Removed call-count targets. Agent became efficient
+but sometimes stopped before testing its highest-risk assumption
+(stopping heuristic preempted self-challenge).
+
+**Iteration 3** — recovered senior-level judgment by making the
+**hypothesis challenge the stopping condition itself**, not an optional
+post-check. The investigation loop is now:
+`gather → conclude tentatively → identify highest-risk assumption → test
+it → stop if it holds, deepen if it fails`.
+
+Key structural changes:
+- **Rule 03**: replaced separate "stopping heuristic" + "self-challenge"
+  sections with a unified "investigation loop: gather → conclude →
+  challenge → stop." Added "current state vs post-change state"
+  reasoning distinction with concrete example.
+- **Rule 02**: elevated self-challenge from test #5 of 5 equal checks to
+  **the critical gate** — tests 1-4 verify internal consistency, test 5
+  asks whether the conclusion could be wrong.
+- **System prompt**: hypothesis challenge is the stopping condition, not
+  an optional step. Added current-vs-post-change reasoning for
+  maintenance questions.
+- **Maintenance skill**: restructured as "core evidence + hypothesis
+  challenge (mandatory)" instead of "core + optional self-challenge."
+  The challenge specifically asks: "my evidence describes the current
+  state — does it predict the post-change state?"
 
 Test results: 109 passed, 0 failures (no regressions).
 
