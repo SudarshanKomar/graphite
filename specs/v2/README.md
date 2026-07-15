@@ -27,6 +27,7 @@ Graphite V2 evolves the tool interaction layer from a custom `ToolRegistry` to t
 | [006](adr/006-mcp-native-architecture.md) | MCP-Native Architecture | Replace ToolRegistry with MCP server; agent becomes MCP client |
 | [007](adr/007-capability-modes.md) | Capability Modes | Observe (default, query-only) / Operate (full topology control) |
 | [008](adr/008-langchain-evaluation.md) | LangChain Evaluation | Evaluated and rejected for V2; custom ReAct preserved |
+| [009](adr/009-skill-system.md) | Skill System | Windsurf rules (`.windsurf/rules/`) and skills (`.windsurf/skills/`) encode investigation workflows + house style for any MCP-connected agent (Cascade) working against Graphite |
 
 ### Architecture Specs (Design)
 
@@ -37,6 +38,7 @@ Graphite V2 evolves the tool interaction layer from a custom `ToolRegistry` to t
 | [Agent ↔ MCP Integration](architecture/agent-mcp-integration.md) | How ReactAgent becomes an MCP client; ~30 lines changed |
 | [Safety Model](architecture/safety-model.md) | 4-layer defense for mutation tools; mode enforcement; rollback |
 | [Migration Plan](architecture/migration-plan.md) | 6-step incremental migration; ~7-11 days; rollback plan |
+| [Skill System](architecture/skill-system.md) | Philosophy, per-skill rationale, activation behavior, and extension guide for `.windsurf/rules/` and `.windsurf/skills/` |
 
 ### What Remains Valid from V1
 

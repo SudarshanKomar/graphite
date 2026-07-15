@@ -137,6 +137,24 @@ V1 is complete, tagged, and frozen. All 3 runs delivered. Architecture preserved
 
 ---
 
+## Skill System (ADR-009)
+
+- Added `.windsurf/rules/` with 3 always-on workspace rules (persona/grounding,
+  response style, reasoning discipline) and `.windsurf/skills/` with 5 domain
+  skills (failure-impact/blast-radius, redundancy/SPOF/recovery,
+  service-dependency/root-cause, maintenance/change-planning,
+  network-health/architecture-review). Auto-loaded by Windsurf on opening
+  the repo; no code change, no new dependency. Targets the *external*
+  MCP consumer path (Cascade connected via `python -m graphite.mcp`),
+  complementing the internal ReAct agent's system prompt.
+- Docs: `specs/v2/adr/009-skill-system.md` (decision) and
+  `specs/v2/architecture/skill-system.md` (philosophy, per-skill
+  rationale, extension guide).
+- Purely additive — no changes to `graphite/agent/`, `graphite/mcp/`, or
+  any test.
+
+---
+
 ## Key Conventions To Preserve
 
 - `GraphWrapper` is the ONLY module that imports `networkx`.
