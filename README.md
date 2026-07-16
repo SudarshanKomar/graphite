@@ -117,6 +117,10 @@ flowchart TD
     style F fill:#f59e0b,color:#000
 ```
 
+## Skills & rules
+
+Graphite's AI behavior is guided by always-on reasoning rules and task-specific investigation skills. These are documented as Markdown in [`specs/v2/rules/`](specs/v2/rules/) and [`specs/v2/skills/`](specs/v2/skills/) so they can be versioned alongside the code.
+
 ## Example scenarios
 
 ### 1. Maintenance planning
@@ -149,6 +153,6 @@ The agent traces service dependencies, computes blast radius, and returns a root
 ```text
 backend/        FastAPI app, twin/analysis/simulation engines, ReAct agent, tools, tests
 frontend/       Next.js operator console (src/app, src/components, src/lib)
-specs/          ADRs, schemas, frontend spec, demo scenarios
+specs/          ADRs, schemas, frontend spec, demo scenarios, v2 skills/rules
 project_state/  Implementation status, context, build log, architecture deviations
 ```
