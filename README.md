@@ -154,5 +154,5 @@ The agent traces service dependencies, computes blast radius, and returns a root
 backend/        FastAPI app, twin/analysis/simulation engines, ReAct agent, tools, tests
 frontend/       Next.js operator console (src/app, src/components, src/lib)
 specs/          ADRs, schemas, frontend spec, demo scenarios, v2 skills/rules
-project_state/  Implementation status, context, build log, architecture deviations
+specs/project_state/  Implementation status, context, build log, architecture deviations
 ```

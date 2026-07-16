@@ -31,4 +31,4 @@ These decisions carry into V2 unless explicitly superseded by a V2 ADR:
 
 ## V1 Architecture Deviations
 
-See `project_state/architecture-deviations.md` for D1–D11. These are documented intentional deviations from specs, not bugs.
+See `../project_state/architecture-deviations.md` for D1–D11. These are documented intentional deviations from specs, not bugs.

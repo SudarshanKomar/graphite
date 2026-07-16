@@ -76,5 +76,5 @@ pytest            # from backend/  -> 94 passed
 
 Run 1 delivered the deterministic backend (twin, graph, analysis, simulation, 34 tools).
 Run 2 delivers the AI copilot: ReAct agent, Gemini/Mock LLM providers, and the FastAPI
-layer (REST + agent SSE). Frontend is scheduled for a later run. See `../project_state/`
+layer (REST + agent SSE). Frontend is scheduled for a later run. See `../specs/project_state/`
 for live status.

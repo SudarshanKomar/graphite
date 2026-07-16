@@ -13,7 +13,7 @@ Chronological implementation journal. Newest entries at the bottom of each run.
 - Confirmed core invariants and the query/mutation tool split.
 
 ### Scaffolding
-- Created `project_state/` tracking files.
+- Created `specs/project_state/` tracking files.
 - Created `backend/` with `pyproject.toml`, `requirements.txt`, `.env.example`,
   `.gitignore`, and the `graphite` package tree (twin/simulation/analysis/tools/agent/api).
 
