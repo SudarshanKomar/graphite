@@ -28,6 +28,70 @@ Key invariants:
 - Service health is recomputed after every mutation.
 - Removed VLANs remain as nodes with `status="removed"`.
 
+## Interaction flows
+
+Graphite can be driven through two different interaction models. Both feed the same deterministic digital twin and tools; they differ mainly in how the user submits the query and how the LLM/agent orchestration happens.
+
+### 1. Programmatic / API flow
+
+The user or another service sends a natural-language query to the FastAPI backend. The in-process ReAct agent interprets the query, plans read-only tool calls, runs them against the working twin, and iterates until it reaches a grounded final recommendation.
+
+```mermaid
+flowchart TD
+    U1[👤 User]
+    Q1[Natural Language Query]
+    API[Graphite API]
+    RA[🧠 ReAct Agent<br/>Reason · Plan · Tool Selection]
+    TL[MCP Tool Layer<br/>Query / Mutation Tools]
+    DT[(Digital Twin<br/>Baseline + Working Twin)]
+    SE[Simulation Engine<br/>NetworkX + Analysis Engine]
+    TR[Tool Results]
+    RR[ReAct Reasoning<br/>Iterative Thought Loop]
+    F1[📋 Final Recommendation]
+
+    U1 --> Q1
+    Q1 --> API
+    API --> RA
+    RA --> TL
+    TL --> DT
+    DT --> SE
+    SE --> TR
+    TR --> RR
+    RR -->|next iteration| TL
+    RR --> F1
+```
+
+### 2. Windsurf / MCP-native flow
+
+The user works inside an MCP-compatible IDE such as Windsurf. The chat message is enriched by Windsurf skills, rules, and a system prompt, then sent to an LLM (e.g., Claude Sonnet/Opus). The LLM acts as an MCP client, invokes tools exposed by the Graphite MCP server, observes the results, and returns a final response.
+
+```mermaid
+flowchart TD
+    U2[👤 User]
+    WC[Windsurf Chat]
+    S[Windsurf Skills<br/>+ Rules<br/>+ System Prompt]
+    LLM[🤖 LLM<br/>Claude Sonnet / Opus]
+    MC[MCP Client]
+    MS[Graphite MCP Server]
+    GT[Graphite Tools<br/>Query / Mutations]
+    DT2[(Digital Twin<br/>NetworkX Working Twin)]
+    TR2[Tool Results]
+    LR[LLM Reasoning<br/>Skills + Rules + Evidence]
+    F2[📋 Final Response]
+
+    U2 --> WC
+    WC --> S
+    S --> LLM
+    LLM --> MC
+    MC --> MS
+    MS --> GT
+    GT --> DT2
+    DT2 --> TR2
+    TR2 --> LR
+    LR -->|next iteration| MC
+    LR --> F2
+```
+
 ## Setup
 
 ```bash

@@ -81,6 +81,25 @@ network_state/*.json  →  TwinBuilder  →  GraphWrapper
 
 A topology-first operator console: an interactive network graph at the center, a persistent AI copilot on the right, and fast fault-simulation controls on the left. Blast radius is rendered as an additive overlay on the live topology.
 
+### Interaction models
+
+Graphite can be driven through **FastAPI + ReAct** or through any **MCP-compatible client** such as Windsurf Chat. Both paths call the same digital-twin tools and return grounded recommendations. See `backend/README.md` for detailed flow diagrams.
+
+```mermaid
+flowchart TD
+    U[👤 User]
+    A[FastAPI + ReAct Agent]
+    B[Windsurf Chat + MCP Client]
+    T[MCP Tool Layer]
+    D[(Digital Twin)]
+    R[Tool Results + Reasoning]
+    F[📋 Final Recommendation]
+
+    U --> A --> T
+    U --> B --> T
+    T --> D --> R --> F
+```
+
 ## Pulse
 
 Pulse is a sibling project to Graphite. While Graphite answers **"What does the network look like?"** through topology, blast-radius, and dependency analysis, Pulse answers **"What is happening inside the network right now?"** by running real Linux networking stacks, routing protocols, and packet flows in a Mininet/FRR simulation. They are complementary: Graphite reasons over structure; Pulse validates runtime behavior.
